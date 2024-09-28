@@ -1,67 +1,59 @@
-// controllers/studentController.js
 const StudentModel = require('./studentModel');
 
-const studentController = {
-    getAllStudents: async (req, res) => {
+class StudentController {
+    constructor() {
+        this.studentModel = new StudentModel();
+    }
+
+    getAllStudents = async (req, res) => {
         try {
-            const students = await StudentModel.getAll();
+            const students = await this.studentModel.getAll();
             res.json(students);
         } catch (error) {
-            console.error('Error al obtener los usuarios:', error.message, error.stack);
-            res.status(500).json({ message: 'Error al obtener los usuarios', error });
+            console.error('Error al obtener estudiantes:', error.message);
+            res.status(500).send('Error al obtener estudiantes');
         }
-    },
+    };
 
-    createStudent: async (req, res) => {
+    createStudent = async (req, res) => {
         const { type, fullname, age, country, grade, email, password } = req.body;
-
-        if (!type || !fullname || !age || !country || !grade || !email || !password) {
-            return res.status(400).json({ message: 'Todos los datos son obligatorios' });
-        }
-
         try {
-            const newStudent = await StudentModel.create(type, fullname, age, country, grade, email, password);
-            res.status(201).json(newStudent);
+            const student = await this.studentModel.create({ type, fullname, age, country, grade, email, password });
+            res.status(201).json(student);
         } catch (error) {
-            console.error('Error al crear el usuario:', error.message, error.stack);
-            res.status(500).json({ message: 'Error al crear el usuario', error });
+            console.error('Error al crear estudiante:', error.message);
+            res.status(500).send('Error al crear estudiante');
         }
-    },
+    };
 
-    updateStudent: async (req, res) => {
+    updateStudent = async (req, res) => {
         const { id } = req.params;
         const { type, fullname, age, country, grade, email, password } = req.body;
-
-        if (!type || !fullname || !age || !country || !grade || !email || !password) {
-            return res.status(400).json({ message: 'Todos los datos son obligatorios' });
-        }
-
         try {
-            const updatedStudent = await StudentModel.update(id, type, fullname, age, country, grade, email, password);
-            if (!updatedStudent) {
-                return res.status(404).json({ message: 'Usuario no encontrado' });
+            const student = await this.studentModel.update(id, { type, fullname, age, country, grade, email, password });
+            if (!student) {
+                return res.status(404).send('Estudiante no encontrado');
             }
-            res.json(updatedStudent);
+            res.json(student);
         } catch (error) {
-            console.error('Error al actualizar el usuario:', error.message, error.stack);
-            res.status(500).json({ message: 'Error al actualizar el usuario', error });
+            console.error('Error al actualizar estudiante:', error.message);
+            res.status(500).send('Error al actualizar estudiante');
         }
-    },
+    };
 
-    deleteStudent: async (req, res) => {
+    deleteStudent = async (req, res) => {
         const { id } = req.params;
-
         try {
-            const result = await StudentModel.delete(id);
-            if (!result) {
-                return res.status(404).json({ message: 'Usuario no encontrado' });
+            const success = await this.studentModel.delete(id);
+            if (!success) {
+                return res.status(404).send('Estudiante no encontrado');
             }
-            res.json({ message: 'Usuario eliminado correctamente' });
+            res.status(204).send();
         } catch (error) {
-            console.error('Error al eliminar el usuario:', error.message, error.stack);
-            res.status(500).json({ message: 'Error al eliminar el usuario', error });
+            console.error('Error al eliminar estudiante:', error.message);
+            res.status(500).send('Error al eliminar estudiante');
         }
-    },
-};
+    };
+}
 
-module.exports = studentController;
+module.exports = StudentController;
