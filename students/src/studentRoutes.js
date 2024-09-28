@@ -1,7 +1,8 @@
-// routes/studentRoutes.js
 const express = require('express');
+const StudentController = require('./studentController');
+
 const router = express.Router();
-const studentController = require('./studentController');
+const studentController = new StudentController();
 
 router.get('/read', studentController.getAllStudents);
 router.post('/create', studentController.createStudent);

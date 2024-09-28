@@ -1,29 +1,44 @@
-// models/studentModel.js
-const pool = require('../../config/conection/db');
+const axios = require('axios');
 
-const StudentModel = {
-    getAll: async () => {
-        const [students] = await pool.query('SELECT * FROM students');
-        return students;
-    },
+class StudentModel {
+    constructor() {
+        this.dbServiceUrl = 'http://localhost:4000/query';
+    }
 
-    create: async (type, fullname, age, country, grade, email, password) => {
-        const [result] = await pool.query('INSERT INTO students (type, fullname, age, country, grade, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)', [type, fullname, age, country, grade, email, password]);
-        return { id: result.insertId, type, fullname, age, country, grade, email, password };
-    },
+    async getAll() {
+        const response = await axios.post(this.dbServiceUrl, {
+            sql: 'SELECT * FROM students',
+            params: []
+        });
+        return response.data;
+    }
 
-    update: async (id, type, fullname, age, country, grade, email, password) => {
-        const [result] = await pool.query('UPDATE students SET type = ?, fullname = ?, age = ?, country = ?, grade = ?, email = ?, password = ? WHERE id = ?', [type, fullname, age, country, grade, email, password, id]);
-        if (result.affectedRows === 0) {
-            return null; // Usuario no encontrado
+    async create(student) {
+        const response = await axios.post(this.dbServiceUrl, {
+            sql: 'INSERT INTO students (type, fullname, age, country, grade, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            params: [student.type, student.fullname, student.age, student.country, student.grade, student.email, student.password]
+        });
+        return { id: response.data.insertId, ...student };
+    }
+
+    async update(id, student) {
+        const response = await axios.post(this.dbServiceUrl, {
+            sql: 'UPDATE students SET type = ?, fullname = ?, age = ?, country = ?, grade = ?, email = ?, password = ? WHERE id = ?',
+            params: [student.type, student.fullname, student.age, student.country, student.grade, student.email, student.password, id]
+        });
+        if (response.data.affectedRows === 0) {
+            return null;
         }
-        return { id, type, fullname, age, country, grade, email, password };
-    },
+        return { id, ...student };
+    }
 
-    delete: async (id) => {
-        const [result] = await pool.query('DELETE FROM students WHERE id = ?', [id]);
-        return result.affectedRows > 0; // Devuelve true si se eliminó
-    },
-};
+    async delete(id) {
+        const response = await axios.post(this.dbServiceUrl, {
+            sql: 'DELETE FROM students WHERE id = ?',
+            params: [id]
+        });
+        return response.data.affectedRows > 0;
+    }
+}
 
 module.exports = StudentModel;
