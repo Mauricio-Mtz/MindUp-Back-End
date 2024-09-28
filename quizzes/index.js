@@ -1,99 +1,83 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+// quizzes/index.js
+const express = require('express');
+const cors = require('cors');
+const pool = require('./../config/db');
 const app = express();
 
-app.use(cors()); // Habilitar CORS
+app.use(cors());
 app.use(express.json());
 
-// Conectar a MongoDB
-mongoose.connect('mongodb://localhost:27017/crud', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log("Conectado a MongoDB"))
-    .catch((error) => console.error("Error al conectar a MongoDB:", error));
-
-// Definir el esquema de Producto
-const productoSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-    },
-    price: {
-        type: Number,
-        required: true,
-    }
-});
-
-// Crear el modelo de Producto
-const Producto = mongoose.model('Productos', productoSchema);
-
-// Crear el CRUD
-
-// 1. Obtener todos los productos (GET)
-app.get("/products", async (req, res) => {
+// 1. Obtener todos los quizzes (GET)
+app.get('/read', async (req, res) => {
     try {
-        const productos = await Producto.find();
-        res.json(productos);
+        const [quizzes] = await pool.query('SELECT * FROM quizzes');
+        res.json(quizzes);
     } catch (error) {
-        res.status(500).json({ message: "Error al obtener los productos", error });
+        console.error('Error al obtener los quizzes:', error.message, error.stack);
+        res.status(500).json({ message: 'Error al obtener los quizzes', error });
     }
 });
 
-// 2. Crear un nuevo producto (POST)
-app.post("/products", async (req, res) => {
-    const { name, price } = req.body;
+app.post('/create', async (req, res) => {
+    const { course_id, name, level, content } = req.body;
 
-    if (!name || !price) {
-        return res.status(400).json({ message: "El nombre y el precio son obligatorios" });
+    if (!course_id || !name || !level || !content) {
+        return res.status(400).json({ message: 'Todos los datos son obligatorios' });
     }
 
     try {
-        const nuevoProducto = new Producto({ name, price });
-        const productoGuardado = await nuevoProducto.save();  // Guardar en MongoDB
-        res.status(201).json(productoGuardado);
+        // Convertir el objeto JSON a una cadena
+        const contentString = JSON.stringify(content);
+
+        // Hacer la consulta
+        const [result] = await pool.query('INSERT INTO quizzes (course_id, name, level, content) VALUES (?, ?, ?, ?)', [course_id, name, level, contentString]);
+        const newModule = { id: result.insertId, course_id, name, level, content };
+        res.status(201).json(newModule);
     } catch (error) {
-        res.status(500).json({ message: "Error al crear el producto", error });
+        console.error('Error al crear el módulo:', error.message, error.stack);
+        res.status(500).json({ message: 'Error al crear el módulo', error });
     }
 });
 
-// 3. Actualizar un producto (PUT)
-app.put("/products/:id", async (req, res) => {
+
+// 3. Actualizar un módulo (PUT)
+app.put('/update/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, price } = req.body;
+    const { course_id, name, level, content } = req.body;
+
+    if (!course_id || !name || !level || !content) {
+        return res.status(400).json({ message: 'Todos los datos son obligatorios' });
+    }
 
     try {
-        const productoActualizado = await Producto.findByIdAndUpdate(id, { name, price }, { new: true });
-
-        if (!productoActualizado) {
-            return res.status(404).json({ message: "Producto no encontrado" });
+        const [result] = await pool.query('UPDATE quizzes SET course_id = ?, name = ?, level = ?, content = ? WHERE id = ?', [course_id, name, level, content, id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Módulo no encontrado' });
         }
-
-        res.json(productoActualizado);
+        res.json({ id, course_id, name, level, content });
     } catch (error) {
-        res.status(500).json({ message: "Error al actualizar el producto", error });
+        console.error('Error al actualizar el módulo:', error.message, error.stack);
+        res.status(500).json({ message: 'Error al actualizar el módulo', error });
     }
 });
 
-// 4. Eliminar un producto (DELETE)
-app.delete("/products/:id", async (req, res) => {
+// 4. Eliminar un módulo (DELETE)
+app.delete('/delete/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        const productoEliminado = await Producto.findByIdAndDelete(id);
-
-        if (!productoEliminado) {
-            return res.status(404).json({ message: "Producto no encontrado" });
+        const [result] = await pool.query('DELETE FROM quizzes WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Módulo no encontrado' });
         }
-
-        res.json({ message: "Producto eliminado correctamente" });
+        res.json({ message: 'Módulo eliminado correctamente' });
     } catch (error) {
-        res.status(500).json({ message: "Error al eliminar el producto", error });
+        console.error('Error al eliminar el módulo:', error.message, error.stack);
+        res.status(500).json({ message: 'Error al eliminar el módulo', error });
     }
 });
 
 // Iniciar el servidor
-app.listen(3000, () => {
-    console.log("Servidor corriendo en el puerto 3000");
+app.listen(3003, () => {
+    console.log('quizzes - 3003');
 });
