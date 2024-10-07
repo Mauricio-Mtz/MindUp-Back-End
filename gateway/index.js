@@ -7,6 +7,14 @@ const app = express();
 // Configurar morgan para loguear todas las peticiones
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
+// Middleware para el servicio de auth
+app.use('/auth', createProxyMiddleware({
+    target: 'http://localhost:3001', // Dirección del microservicio de cursos
+    changeOrigin: true,
+    pathRewrite: {
+        '^/auth': '/auth', // Reescribe la ruta para que coincida con las rutas en el microservicio
+    },
+}));
 // Middleware para el servicio de usuarios
 app.use('/students', createProxyMiddleware({
     target: 'http://localhost:3001', // Dirección del microservicio de cursos
