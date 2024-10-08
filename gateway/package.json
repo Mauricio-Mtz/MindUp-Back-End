@@ -1,7 +1,7 @@
 {
-  "name": "microservicios",
+  "name": "gateway",
   "version": "1.0.0",
-  "description": "",
+  "description": "Este es el microservicio principal de la aplicacion y sirve de puente entre el cliente y cualquier otro microservicio.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

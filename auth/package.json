@@ -1,7 +1,7 @@
 {
-  "name": "microservicios",
+  "name": "auth",
   "version": "1.0.0",
-  "description": "",
+  "description": "Este microservicio maneja el inicio de sesion y registro del usuario.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

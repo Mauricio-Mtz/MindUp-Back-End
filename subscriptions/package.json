@@ -1,7 +1,7 @@
 {
-  "name": "modules",
+  "name": "subscriptions",
   "version": "1.0.0",
-  "description": "Este microservicio maneja la gestion de los modulos en la aplicacion.",
+  "description": "Este microservicio maneja la gestion de suscripciones en la aplicacion.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
