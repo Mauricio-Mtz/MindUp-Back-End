@@ -1,0 +1,14 @@
+{
+  "name": "mindup-back-end",
+  "version": "1.0.0",
+  "description": "Aqui encontraras toda la logica detras de la aplicacion MindUp",
+  "main": "ecosystem.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pm2": "^5.4.2"
+  }
+}

@@ -2,6 +2,10 @@
 # Habilita el modo para detener el script si ocurre algún error
 set -e
 
+# Instalando dependencias en archivo principal
+echo "Instalando dependencias en principal..."
+npm install
+
 # Instalando dependencias en gateway
 echo "Instalando dependencias en gateway..."
 cd gateway
