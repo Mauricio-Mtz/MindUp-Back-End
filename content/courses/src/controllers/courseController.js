@@ -1,24 +1,29 @@
 // controllers/CourseController.js
-const CourseModel = require('./CourseModel');
+const Course = require('../models/Course');
 
 class CourseController {
-    constructor() {
-        this.courseModel = new CourseModel();
-    }
-
-    // Obtener todos los cursos
-    async getAllCourses(req, res) {
+    static async getAllCourses(req, res) {
         try {
-            const courses = await this.courseModel.getAllCourses();
-            res.json(courses);
+            const courses = await Course.getAllCourses();
+            if (courses.length === 0){
+                res.status(200).json({
+                    success: true,
+                    message: "No hay cursos."
+                });
+            } else {
+                res.status(200).json({
+                    success: true,
+                    message: "Cursos obtenidos correctamente.",
+                    data: courses
+                });
+            }
         } catch (error) {
             console.error('Error al obtener los cursos:', error.message);
             res.status(500).json({ message: 'Error al obtener los cursos', error });
         }
     }
 
-    // Crear un nuevo curso
-    async createCourse(req, res) {
+    static async createCourse(req, res) {
         const { name, description } = req.body;
 
         if (!name || !description) {
@@ -26,7 +31,7 @@ class CourseController {
         }
 
         try {
-            const newCourse = await this.courseModel.createCourse(name, description);
+            const newCourse = await Course.createCourse(name, description);
             res.status(201).json(newCourse);
         } catch (error) {
             console.error('Error al crear el curso:', error.message);
@@ -34,8 +39,7 @@ class CourseController {
         }
     }
 
-    // Actualizar un curso
-    async updateCourse(req, res) {
+    static async updateCourse(req, res) {
         const { id } = req.params;
         const { name, description } = req.body;
 
@@ -44,7 +48,7 @@ class CourseController {
         }
 
         try {
-            const affectedRows = await this.courseModel.updateCourse(id, name, description);
+            const affectedRows = await Course.updateCourse(id, name, description);
             if (affectedRows === 0) {
                 return res.status(404).json({ message: 'Curso no encontrado' });
             }
@@ -55,12 +59,11 @@ class CourseController {
         }
     }
 
-    // Eliminar un curso
-    async deleteCourse(req, res) {
+    static async deleteCourse(req, res) {
         const { id } = req.params;
 
         try {
-            const affectedRows = await this.courseModel.deleteCourse(id);
+            const affectedRows = await Course.deleteCourse(id);
             if (affectedRows === 0) {
                 return res.status(404).json({ message: 'Curso no encontrado' });
             }

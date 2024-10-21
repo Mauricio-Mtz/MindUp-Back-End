@@ -28,7 +28,7 @@ app.use('/courses', createProxyMiddleware({
     target: 'http://localhost:3002', // Dirección del microservicio de cursos
     changeOrigin: true,
     pathRewrite: {
-        '^/courses': '/read', // Reescribe la ruta para que coincida con las rutas en el microservicio
+        '^/courses': '/courses', // Reescribe la ruta para que coincida con las rutas en el microservicio
     },
 }));
 // Middleware para el servicio de modulos

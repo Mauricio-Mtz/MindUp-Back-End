@@ -11,6 +11,7 @@ app.use(express.json());
 // Routes
 app.use('/', authRoutes);
 
+// Iniciar el servidor
 const PORT = process.env.AUTH_PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Auth - ${PORT}`);

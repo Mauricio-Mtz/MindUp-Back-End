@@ -1,16 +1,18 @@
-// index.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const courseRoutes = require('./src/CourseRoutes');
+const courseRoutes = require('./src/routes/courseRoutes');
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
 // Usar las rutas de los cursos
-app.use('/courses', courseRoutes);
+app.use('/', courseRoutes);
 
 // Iniciar el servidor
-app.listen(3002, () => {
-    console.log('Courses service running on port 3002');
+const PORT = process.env.COURSES_PORT || 3002;
+app.listen(PORT, () => {
+    console.log(`Courses - ${PORT}`);
 });
