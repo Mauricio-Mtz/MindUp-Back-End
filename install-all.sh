@@ -18,4 +18,10 @@ cd auth
 npm install
 cd ..
 
+# Instalando dependencias en courses
+echo "Instalando dependencias en courses..."
+cd content/courses
+npm install
+cd ../..
+
 echo "Instalación de dependencias completada!"
