@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const adminRoutes = require('./src/routes/adminRoutes');
+const userRoutes = require('./src/routes/userRoutes');
 const app = express();
 
 // Middlewares
@@ -9,9 +9,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/', adminRoutes);
+app.use('/', userRoutes);
 
-const PORT = process.env.ADMIN_PORT || 3001;
+const PORT = process.env.USERS_PORT || 3005;
 app.listen(PORT, () => {
-    console.log(`Admin - ${PORT}`);
+    console.log(`Users - ${PORT}`);
 });

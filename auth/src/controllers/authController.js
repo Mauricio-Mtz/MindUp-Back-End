@@ -17,7 +17,7 @@ class AuthController {
     
             if (!user) {
                 user = await Member.findByEmail(email);
-                if (user) userType = 'Member';
+                if (user) userType = 'member';
             }
     
             if (!user) {
@@ -59,6 +59,9 @@ class AuthController {
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
+
+            // Agregar el userType al objeto de usuario
+            user = { ...user, userType };
     
             // Enviar la respuesta con el token y el usuario
             return res.status(200).json({
@@ -127,8 +130,8 @@ class AuthController {
                     return res.status(400).json({ success: false, message: 'El tipo de usuario no es valido' });
             }
     
-            // Agregar el valor type al usuario
-            user.type = typeUser;
+            // Agregar el userType al objeto de usuario
+            user = { ...user, userType };
     
             // Enviar la respuesta con el usuario creado
             return res.status(201).json({

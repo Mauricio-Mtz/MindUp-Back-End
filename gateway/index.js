@@ -39,6 +39,14 @@ app.use('/modules', createProxyMiddleware({
         '^/modulos': '/read', // Reescribe la ruta para que coincida con las rutas en el microservicio
     },
 }));
+// Middleware para el servicio de usuarios
+app.use('/users', createProxyMiddleware({
+    target: 'http://localhost:3005',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/users': '/getUser',
+    },
+}));
 
 // Servidor escuchando en el puerto 3000
 app.listen(3000, () => {

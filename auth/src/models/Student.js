@@ -20,13 +20,13 @@ class Student {
         const insertId = result.insertId;
     
         // Realizar una consulta para obtener el usuario recién creado
-        const [rows] = await db.execute(`SELECT * FROM students WHERE id = ?`, [insertId]);
+        const [rows] = await db.execute(`SELECT email FROM students WHERE id = ?`, [insertId]);
         // Devolver el usuario recién creado (el primer resultado de la consulta)
         return rows[0];
     }    
 
     static async findByEmail(email) {
-        const [rows] = await db.execute(`SELECT * FROM students WHERE email = ?`, [email]);
+        const [rows] = await db.execute(`SELECT email FROM students WHERE email = ?`, [email]);
         return rows[0];
     }
 
@@ -66,7 +66,7 @@ class Student {
         await db.execute(query, params);
     
         // Obtener los datos actualizados
-        const [rows] = await db.execute(`SELECT * FROM students WHERE email = ?`, [email]); 
+        const [rows] = await db.execute(`SELECT email FROM students WHERE email = ?`, [email]); 
         return rows[0];
     }    
 }

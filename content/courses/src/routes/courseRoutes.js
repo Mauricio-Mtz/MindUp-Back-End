@@ -4,6 +4,7 @@ const CourseController = require('../controllers/courseController');
 const router = express.Router();
 
 router.get('/getAllCourses', CourseController.getAllCourses);
+router.get('/getRecomendedCourses', CourseController.getRecomendedCourses);
 router.post('/create', CourseController.createCourse);
 router.put('/update/:id', CourseController.updateCourse);
 router.delete('/delete/:id', CourseController.deleteCourse);
