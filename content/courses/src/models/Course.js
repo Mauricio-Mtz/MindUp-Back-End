@@ -24,6 +24,23 @@ class CourseModel {
         const [result] = await db.query('DELETE FROM courses WHERE id = ?', [id]);
         return result.affectedRows;
     }
+
+    static async getCourse(courseId) {
+        const [courses] = await db.query(`
+            SELECT 
+                id,
+                name,
+                description,
+                img,
+                organization_id
+            FROM 
+                courses
+            WHERE 
+                id = ?
+        `, [courseId]);
+
+        return courses.length > 0 ? courses[0] : null;
+    }
 }
 
 module.exports = CourseModel;

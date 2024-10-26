@@ -1,4 +1,5 @@
 // controllers/CourseController.js
+const axios = require('axios');
 const Course = require('../models/Course');
 
 class CourseController {
@@ -71,6 +72,41 @@ class CourseController {
         } catch (error) {
             console.error('Error al eliminar el curso:', error.message);
             res.status(500).json({ message: 'Error al eliminar el curso', error });
+        }
+    }
+
+    static async getCourse(req, res) {
+        
+        const { id } = req.params;
+        try {
+            // Obtener el curso
+            const course = await Course.getCourse(id);
+            if (!course) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Curso no encontrado."
+                });
+            }
+    
+            // Hacer solicitud a otro microservicio para obtener los módulos del curso con Axios
+            const response = await axios.get(`http://localhost:3003/getModulesForCourses/${id}`);
+            const modules = response.data;
+    
+            // Unir el curso y los módulos en un solo JSON
+            const courseWithModules = {
+                ...course,
+                modules: modules.data
+            };
+    
+            // Enviar la respuesta con el JSON combinado
+            res.status(200).json({
+                success: true,
+                message: "Curso obtenido correctamente.",
+                data: courseWithModules
+            });
+        } catch (error) {
+            console.error('Error al obtener el curso:', error.message);
+            res.status(500).json({ message: 'Error al obtener el curso', error });
         }
     }
 }
