@@ -76,11 +76,13 @@ class Member {
         params.push(id); // Agregamos el ID al final de los parámetros
     
         // Ejecutamos la consulta
-        await db.execute(query, params);
-    
-        // Obtener los datos actualizados
-        const [rows] = await db.execute(`SELECT * FROM members WHERE email = ?`, [email]); 
-        return rows[0];
+        let result = await db.execute(query, params);
+
+        if (result[0].affectedRows > 0) {
+            return true;
+        } else {
+            return false
+        }
     }    
 }
 

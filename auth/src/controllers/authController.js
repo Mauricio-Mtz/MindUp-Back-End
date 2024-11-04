@@ -9,20 +9,20 @@ class AuthController {
         const { type, email, password } = req.body;
         try {
             let user;
-            let userType = '';
+            let typeUser = '';
     
             // Buscar el usuario según su tipo
             user = await Student.findByEmail(email);
-            if (user) userType = 'student';
+            if (user) typeUser = 'student';
     
             if (!user) {
                 user = await Member.findByEmail(email);
-                if (user) userType = 'member';
+                if (user) typeUser = 'member';
             }
     
             if (!user) {
                 user = await Organization.findByEmail(email);
-                if (user) userType = 'organization';
+                if (user) typeUser = 'organization';
             }
     
             // Si no se encuentra el usuario (correo no existe)
@@ -55,13 +55,13 @@ class AuthController {
     
             // Generar el token JWT solo si las credenciales son correctas
             const token = jwt.sign(
-                { id: user.id, email: user.email, type: userType },
+                { id: user.id, email: user.email, type: typeUser },
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
 
-            // Agregar el userType al objeto de usuario
-            user = { ...user, userType };
+            // Agregar el typeUser al objeto de usuario
+            user = { ...user, type: typeUser };
     
             // Enviar la respuesta con el token y el usuario
             return res.status(200).json({
@@ -130,8 +130,8 @@ class AuthController {
                     return res.status(400).json({ success: false, message: 'El tipo de usuario no es valido' });
             }
     
-            // Agregar el userType al objeto de usuario
-            user = { ...user, userType };
+            // Agregar el typeUser al objeto de usuario
+            user = { ...user, type: typeUser };
     
             // Enviar la respuesta con el usuario creado
             return res.status(201).json({
@@ -152,7 +152,7 @@ class AuthController {
 
     static async completeRegister(req, res) {
         const { typeUser, email, password, name, birthdate, country, grade, address, token, rfc, fiscalAddress, fiscalRegime } = req.body;
-        let user;
+        let result;
 
         try {
             const hashedPassword = password && password !== "" ? await bcrypt.hash(password, 10) : null;
@@ -160,24 +160,30 @@ class AuthController {
             // Actualizar datos del usuario según el tipo
             switch (typeUser) {
                 case 'student':
-                    user = await Student.updateDetails(email, name, hashedPassword, birthdate, country, grade);
+                    result = await Student.updateDetails(email, name, hashedPassword, birthdate, country, grade);
                     break;
                 case 'member':
-                    user = await Member.updateDetails(email, name, hashedPassword, country, token);
-                    break;ta
+                    result = await Member.updateDetails(email, name, hashedPassword, country, token);
+                    break;
                 case 'organization':
-                    user = await Organization.updateDetails(email, name, hashedPassword, address, rfc, fiscalAddress, fiscalRegime);
+                    result = await Organization.updateDetails(email, name, hashedPassword, address, rfc, fiscalAddress, fiscalRegime);
                     break;
                 default:
                     return res.status(400).json({ success: false, message: 'Tipo de usuario invalido' });
             }
 
             // Enviar respuesta con la actualización exitosa
-            return res.status(200).json({
-                success: true,
-                data: user,
-                message: 'Detalles actualizados correctamente',
-            });
+            if (result) {
+                return res.status(200).json({
+                    success: true,
+                    message: 'Detalles actualizados correctamente',
+                });
+            } else {
+                return res.status(200).json({
+                    success: false,
+                    message: 'No se pudieron actualizar los datos',
+                });
+            }
         } catch (error) {
             return res.status(500).json({
                 success: false,

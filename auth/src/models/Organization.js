@@ -72,11 +72,13 @@ class Organization {
         params.push(id);
     
         // Ejecutamos la consulta
-        await db.execute(query, params);
+        let result = await db.execute(query, params);
 
-        // Obtener los datos actualizados
-        const [rows] = await db.execute(`SELECT * FROM organizations WHERE email = ?`, [email]); 
-        return rows[0];
+        if (result[0].affectedRows > 0) {
+            return true;
+        } else {
+            return false
+        }
     }
 }
 

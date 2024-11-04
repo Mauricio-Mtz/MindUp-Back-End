@@ -31,7 +31,6 @@ class Student {
     }
 
     static async updateDetails(email, name, password, birthdate, country, grade) {
-        console.log("Password: ", password)
         // Primero, buscamos el ID del estudiante utilizando su email
         const [idUser] = await db.execute(`SELECT id FROM students WHERE email = ?`, [email]);
         
@@ -63,11 +62,13 @@ class Student {
         params.push(id); // Agregamos el ID al final de los parámetros
     
         // Ejecutamos la consulta
-        await db.execute(query, params);
-    
-        // Obtener los datos actualizados
-        const [rows] = await db.execute(`SELECT email FROM students WHERE email = ?`, [email]); 
-        return rows[0];
+        let result = await db.execute(query, params);
+
+        if (result[0].affectedRows > 0) {
+            return true;
+        } else {
+            return false
+        }
     }    
 }
 
