@@ -38,14 +38,14 @@ cd ../..
 
 # Instalando dependencias en courses
 echo "Instalando dependencias en users..."
-cd content/users
+cd users
 npm install
-cd ../..
+cd ..
 
 # Instalando dependencias en courses
 echo "Instalando dependencias en payments..."
-cd content/payments
+cd payments
 npm install
-cd ../..
+cd ..
 
 echo "Instalación de dependencias completada!"
