@@ -31,10 +31,10 @@ npm install
 cd ../..
 
 # Instalando dependencias en courses
-echo "Instalando dependencias en quizzes..."
-cd content/quizzes
-npm install
-cd ../..
+# echo "Instalando dependencias en quizzes..."
+# cd content/quizzes
+# npm install
+# cd ../..
 
 # Instalando dependencias en courses
 echo "Instalando dependencias en users..."
