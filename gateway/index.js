@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const morgan = require('morgan');
@@ -13,14 +14,6 @@ app.use('/auth', createProxyMiddleware({
     changeOrigin: true,
     pathRewrite: {
         '^/auth': '/auth', // Reescribe la ruta para que coincida con las rutas en el microservicio
-    },
-}));
-// Middleware para el servicio de usuarios
-app.use('/students', createProxyMiddleware({
-    target: 'http://localhost:3001', // Dirección del microservicio de cursos
-    changeOrigin: true,
-    pathRewrite: {
-        '^/users': '/users', // Reescribe la ruta para que coincida con las rutas en el microservicio
     },
 }));
 // Middleware para el servicio de cursos
@@ -47,8 +40,17 @@ app.use('/users', createProxyMiddleware({
         '^/users': '/getUser',
     },
 }));
+// Middleware para el servicio de usuarios
+app.use('/payments', createProxyMiddleware({
+    target: 'http://localhost:3006',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/payments': '/getPaymentsByStudent',
+    },
+}));
 
 // Servidor escuchando en el puerto 3000
-app.listen(3000, () => {
-    console.log('Gateway - 3000');
+const PORT = process.env.GATEWAY_PORT;
+app.listen(PORT, () => {
+    console.log(`Gateway - ${PORT}`);
 });

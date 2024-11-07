@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/', courseRoutes);
 
 // Iniciar el servidor
-const PORT = process.env.COURSES_PORT || 3002;
+const PORT = process.env.COURSES_PORT;
 app.listen(PORT, () => {
     console.log(`Courses - ${PORT}`);
 });

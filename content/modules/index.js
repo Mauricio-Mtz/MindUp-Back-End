@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/', moduleRoutes);
 
 // Iniciar el servidor
-const PORT = process.env.MODULES_PORT || 3003;
+const PORT = process.env.MODULES_PORT;
 app.listen(PORT, () => {
     console.log(`Modules - ${PORT}`);
 });

@@ -11,7 +11,7 @@ app.use(express.json());
 // Routes
 app.use('/', userRoutes);
 
-const PORT = process.env.USERS_PORT || 3005;
+const PORT = process.env.USERS_PORT;
 app.listen(PORT, () => {
     console.log(`Users - ${PORT}`);
 });

@@ -7,6 +7,7 @@ const Organization = require('../models/Organization');
 class AuthController {
     static async login(req, res) {
         const { type, email, password } = req.body;
+        console.log("HOLA");
         try {
             let user;
             let typeUser = '';
