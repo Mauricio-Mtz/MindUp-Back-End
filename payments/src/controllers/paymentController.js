@@ -68,25 +68,30 @@ class paymentController {
     }
 
     // Crear una preferencia de pago y devolver el ID al frontend
-    static async createMercadoPagoPayment (req, res) {
+    static async createMercadoPagoPayment(req, res) {
         try {
             const { studentId, items } = req.body;
-
             const preference = await MercadoPagoService.createPaymentPreference(items, studentId);
+            
+            // Verifica que el objeto de respuesta tenga un id
+            if (!preference.id) {
+                throw new Error("No se encontró el ID en la respuesta de MercadoPago");
+            }
             res.json({ id: preference.id });
         } catch (error) {
+            console.error("Error en el controlador:", error);
             res.status(500).json({ error: error.message });
         }
-    };
-    
+    }
+
     // Webhook para recibir actualizaciones de Mercado Pago
     static async paymentWebhook(req, res) {
         const paymentData = req.body;
 
         try {
             const { id, status, payment_type, transaction_amount, description, additional_info } = paymentData;
+            console.log("INFORMACION DEL PAGO: ", paymentData)
 
-            console.log(paymentData);
             console.log("ID", id);
             console.log("status", status);
             console.log("payment_type", payment_type);

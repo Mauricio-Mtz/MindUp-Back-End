@@ -1,28 +1,22 @@
-const mercadopago = require('mercadopago');
-mercadopago.configure({
-    access_token: process.env.ACCESS_TOKEN,
-});
+const { MercadoPagoConfig, Preference } = require('mercadopago');
+const client = new MercadoPagoConfig({ accessToken: process.env.ACCESS_TOKEN });
 
 class mercadoPagoService {
-    static async createPaymentPreference (items, studentId) {
+    static async createPaymentPreference(items, studentId) {
         try {
-            // Aquí creamos la preferencia de pago con MercadoPago SDK
-            const preference = {
-                items: items,
-                back_urls: {
-                    success: 'https://tu-servidor.com/success', // URL de éxito
-                    failure: 'https://tu-servidor.com/failure', // URL de fallo
-                    pending: 'https://tu-servidor.com/pending'  // URL de pendiente
-                },
-                additional_info: {
-                    studentId: studentId  // Aquí guardas el studentId en el campo adicional
-                }
-            };
+            const preference = new Preference(client);
 
-            const preferenceCreated = await mercadoPago.preferences.create(preference);
-            return preferenceCreated.response;
+            const preferenceCreated = await preference.create({
+                body: {
+                    additional_info: JSON.stringify({ studentId: studentId }),
+                    items: items
+                }
+            });
+            
+            return preferenceCreated || {};
         } catch (error) {
-            throw new Error('Error creando la preferencia de pago');
+            console.error("Error al crear la preferencia de pago", error);
+            throw new Error("Error creando la preferencia de pago");
         }
     }
 }
