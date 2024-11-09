@@ -74,6 +74,9 @@ module.exports = {
         env: {
           NODE_ENV: 'production',
           USERS_PORT: process.env.PAYMENTS_PORT,
+          PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
+          PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
+          ACCESS_TOKEN: process.env.ACCESS_TOKEN,
           
           DB_HOST: process.env.DB_HOST,
           DB_USER: process.env.DB_USER,
