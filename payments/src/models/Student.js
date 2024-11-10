@@ -1,6 +1,11 @@
 const db = require('../../config/db');
 
 class Student {
+    static async findByEmail(email) {
+        const [rows] = await db.execute(`SELECT id FROM students WHERE email = ?`, [email]);
+        return rows[0];
+    }
+
     static async getPaymentsByStudent(email) {
         const [rows] = await db.execute(`
             SELECT 

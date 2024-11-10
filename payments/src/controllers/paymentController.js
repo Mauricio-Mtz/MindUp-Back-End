@@ -47,11 +47,12 @@ class paymentController {
     
     // Ejecutar el pago con PayPal
     static async capturePaypalPayment(req, res) {
-        const { orderId, studentId, amount } = req.body;
+        const { orderId, studentEmail, amount } = req.body;
     
         try {
             // Llamar a la función capturePayment para obtener el status y orderId
             const { transactionId, status } = await PaypalService.capturePayment(orderId);
+            const studentId = await Student.findByEmail(studentEmail);
     
             if (status === 'COMPLETED') {  // Verificar si el pago fue exitoso
                 // Registrar el pago en la base de datos usando el transactionId y el status
@@ -70,8 +71,8 @@ class paymentController {
     // Crear una preferencia de pago y devolver el ID al frontend
     static async createMercadoPagoPreference(req, res) {
         try {
-            const { studentId, items } = req.body;
-            const preference = await MercadoPagoService.createPaymentPreference(items, studentId);
+            const { studentEmail, items } = req.body;
+            const preference = await MercadoPagoService.createPaymentPreference(items, studentEmail);
 
             // Verifica que el objeto de respuesta tenga un id
             if (!preference.id) {
@@ -90,9 +91,8 @@ class paymentController {
 
         try {
             const data = await MercadoPagoService.getPaymentDetails(paymentId);
-            console.log(data);
             const { external_reference, transaction_amount, status } = data;
-            const studentId = external_reference;
+            const studentId = await Student.findByEmail(external_reference);
 
             await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
 
@@ -102,36 +102,6 @@ class paymentController {
             res.sendStatus(500);
         }
     }
-    static async receiveWebhook(req, res) {
-        const paymentId = req.query.id;
-    
-        try {
-            const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                // console.log(data);
-    
-                const { external_reference, transaction_amount, status } = data;
-                console.log("referencia", external_reference)
-                console.log("cantidad", transaction_amount)
-                console.log("status", status)
-                const studentId = external_reference; // Este es el studentId que enviaste
-    
-                // Llama al modelo para guardar la información en la base de datos
-                await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
-            }
-    
-            res.sendStatus(200);  // Confirmar recepción del webhook
-        } catch (error) {
-            console.error('Error al procesar el webhook:', error);
-            res.sendStatus(500);
-        }
-    }    
 }
 
 module.exports = paymentController;

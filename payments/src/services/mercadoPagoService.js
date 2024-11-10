@@ -4,18 +4,18 @@ const client = new MercadoPagoConfig({
 });
 
 class mercadoPagoService {
-    static async createPaymentPreference(items, studentId) {
+    static async createPaymentPreference(items, studentEmail) {
         try {
             const body = {
                 items: items,
                 back_urls: {
-                    success: 'https://codeflex.space',
-                    failure: 'https://codeflex.space/catalog',
-                    pending: 'https://codeflex.space/catalog'
+                    success: 'https://codeflex.space/account/payments',
+                    failure: 'https://codeflex.space/account/payments',
+                    pending: 'https://codeflex.space/account/payments'
                 },
                 auto_return: "approved",
                 notification_url: 'https://mindup-back-end.onrender.com/payments/receive-mercadopago-webhook',
-                external_reference: studentId.toString()
+                external_reference: studentEmail.toString()
             }
     
             const preference = new Preference(client);
@@ -40,7 +40,6 @@ class mercadoPagoService {
 
             if (response.ok) {
                 const data = await response.json();
-                data.external_reference = Number(data.external_reference);
                 return data;
             }
             throw new Error("Error al obtener los detalles del pago");
