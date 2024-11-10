@@ -47,6 +47,7 @@ class mercadoPagoService {
             }
     
             const data = await response.json();
+            console.log(data)
             return data;
         } catch (error) {
             console.error("Error en MercadoPagoService.getPaymentDetails:", error);
