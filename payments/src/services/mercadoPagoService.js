@@ -30,24 +30,29 @@ class mercadoPagoService {
 
     static async getPaymentDetails(paymentId) {
         try {
-            
             const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
                 }
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                return data;
+    
+            // Log de la respuesta completa para investigar
+            console.log("Respuesta de MercadoPago:", response);
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error en la respuesta de MercadoPago:", errorData);
+                throw new Error(`Error al obtener los detalles del pago: ${errorData.message || "sin mensaje de error"}`);
             }
-            throw new Error("Error al obtener los detalles del pago");
+    
+            const data = await response.json();
+            return data;
         } catch (error) {
             console.error("Error en MercadoPagoService.getPaymentDetails:", error);
             throw error;
         }
-    }   
+    }
 }
 
 module.exports = mercadoPagoService;

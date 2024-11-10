@@ -91,10 +91,10 @@ class paymentController {
 
         try {
             const data = await MercadoPagoService.getPaymentDetails(paymentId);
-            const { external_reference, transaction_amount, status } = data;
+            const { external_reference, transaction_amount, collection_status } = data;
             const studentId = await Student.findByEmail(external_reference);
 
-            await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
+            await PaymentModel.createPaymentRecord('mercadopago', paymentId, collection_status, transaction_amount, studentId);
 
             res.sendStatus(200);
         } catch (error) {
