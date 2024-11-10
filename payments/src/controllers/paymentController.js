@@ -83,7 +83,7 @@ class paymentController {
             res.status(500).json({ error: error.message });
         }
     }
-
+    
     // Webhook para recibir actualizaciones de Mercado Pago
     static async receiveWebhook(req, res) {
         const paymentId = req.query.id;
@@ -102,6 +102,33 @@ class paymentController {
             res.sendStatus(500);
         }
     }
+    static async receiveWebhook(req, res) {
+        const paymentId = req.query.id;
+    
+        try {
+            const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+    
+                const { external_reference, transaction_amount, status } = data;
+                const studentId = external_reference; // Este es el studentId que enviaste
+    
+                // Llama al modelo para guardar la información en la base de datos
+                await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
+            }
+    
+            res.sendStatus(200);  // Confirmar recepción del webhook
+        } catch (error) {
+            console.error('Error al procesar el webhook:', error);
+            res.sendStatus(500);
+        }
+    }    
 }
 
 module.exports = paymentController;
