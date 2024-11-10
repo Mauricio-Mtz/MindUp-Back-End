@@ -88,21 +88,34 @@ class paymentController {
     // Webhook para recibir actualizaciones de Mercado Pago
     static async receiveWebhook(req, res) {
         const paymentId = req.query.id;
-
+    
         try {
+            // Obtén los detalles del pago
             const data = await MercadoPagoService.getPaymentDetails(paymentId);
             const { external_reference, status, transaction_amount } = data;
-            console.log("INFORMACION", data)
-            console.log("STATUS", status)
+    
+            // Aceptamos solo los estados 'approved', 'pending' o 'rejected'
+            if (!['approved', 'pending', 'rejected'].includes(status)) {
+                console.log(`Estado no válido recibido: ${status}`);
+                return res.sendStatus(200); // Responde para evitar más intentos de reenvío
+            }
+    
+            console.log("INFORMACION", data);
+            console.log("STATUS", status);
+    
+            // Busca al estudiante asociado al pago
             const studentId = await Student.findByEmail(external_reference);
-
+    
+            // Crea el registro de pago
             await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
+            console.log("Pago procesado con éxito");
+    
             res.sendStatus(200);
         } catch (error) {
             console.error('Error al procesar el webhook en PaymentController:', error);
             res.sendStatus(500);
         }
-    }
+    }    
 }
 
 module.exports = paymentController;

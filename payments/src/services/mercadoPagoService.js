@@ -38,13 +38,19 @@ class mercadoPagoService {
             });
     
             const data = await response.json();
-            console.log(data)
+    
+            // Si el estado no es un número, logueamos la respuesta
+            if (isNaN(data.status)) {
+                console.log(data);
+            }
+    
             return data;
         } catch (error) {
-            console.error("Error en MercadoPagoService.getPaymentDetails:", error);
-            throw error;
+            // Mostramos un mensaje controlado en lugar de llenar los logs con errores genéricos
+            console.error("Error al obtener detalles del pago:", error.message);
+            throw new Error("Error al obtener detalles del pago.");
         }
-    }
+    }    
 }
 
 module.exports = mercadoPagoService;
