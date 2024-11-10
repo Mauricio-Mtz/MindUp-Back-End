@@ -3,7 +3,7 @@ const db = require('../../config/db');
 class Student {
     static async findByEmail(email) {
         const [rows] = await db.execute(`SELECT id FROM students WHERE email = ?`, [email]);
-        return rows[0];
+        return rows[0].id;
     }
 
     static async getPaymentsByStudent(email) {
