@@ -37,15 +37,6 @@ class mercadoPagoService {
                 }
             });
     
-            // Log de la respuesta completa para investigar
-            console.log("Respuesta de MercadoPago:", response);
-    
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Error en la respuesta de MercadoPago:", errorData);
-                throw new Error(`Error al obtener los detalles del pago: ${errorData.message || "sin mensaje de error"}`);
-            }
-    
             const data = await response.json();
             console.log(data)
             return data;

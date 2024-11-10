@@ -91,11 +91,12 @@ class paymentController {
 
         try {
             const data = await MercadoPagoService.getPaymentDetails(paymentId);
-            const { external_reference, transaction_amount, collection_status } = data;
+            const { external_reference, status, transaction_amount } = data;
+            console.log("INFORMACION", data)
+            console.log("STATUS", status)
             const studentId = await Student.findByEmail(external_reference);
 
-            await PaymentModel.createPaymentRecord('mercadopago', paymentId, collection_status, transaction_amount, studentId);
-
+            await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
             res.sendStatus(200);
         } catch (error) {
             console.error('Error al procesar el webhook en PaymentController:', error);
