@@ -114,9 +114,12 @@ class paymentController {
             });
             if (response.ok) {
                 const data = await response.json();
-                console.log(data);
+                // console.log(data);
     
                 const { external_reference, transaction_amount, status } = data;
+                console.log("referencia", external_reference)
+                console.log("cantidad", transaction_amount)
+                console.log("status", status)
                 const studentId = external_reference; // Este es el studentId que enviaste
     
                 // Llama al modelo para guardar la información en la base de datos
