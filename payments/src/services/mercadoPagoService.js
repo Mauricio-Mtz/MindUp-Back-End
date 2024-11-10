@@ -39,11 +39,6 @@ class mercadoPagoService {
     
             const data = await response.json();
     
-            // Si el estado no es un número, logueamos la respuesta
-            if (isNaN(data.status)) {
-                console.log(data);
-            }
-    
             return data;
         } catch (error) {
             // Mostramos un mensaje controlado en lugar de llenar los logs con errores genéricos

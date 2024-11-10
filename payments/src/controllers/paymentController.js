@@ -100,12 +100,9 @@ class paymentController {
                 return res.sendStatus(200); // Responde para evitar más intentos de reenvío
             }
     
-            console.log("INFORMACION", data);
-            console.log("STATUS", status);
-    
             // Busca al estudiante asociado al pago
             const studentId = await Student.findByEmail(external_reference);
-    
+            console.log("STATUS", status)
             // Crea el registro de pago
             await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
             console.log("Pago procesado con éxito");
