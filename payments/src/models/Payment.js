@@ -3,7 +3,6 @@ const db = require('../../config/db');
 class Payment {
     // Este método se encarga de registrar el pago y actualizar o crear la suscripción
     static async createPaymentRecord(method, transactionId, status, amount, studentId) {
-        console.log("STATUS modelo", status)
         // Primero, llamar al método que maneja la suscripción
         const subscriptionId = await Payment.updateOrCreateSubscription(studentId);
 
