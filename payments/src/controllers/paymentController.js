@@ -68,11 +68,11 @@ class paymentController {
     }
 
     // Crear una preferencia de pago y devolver el ID al frontend
-    static async createMercadoPagoPayment(req, res) {
+    static async createMercadoPagoPreference(req, res) {
         try {
             const { studentId, items } = req.body;
             const preference = await MercadoPagoService.createPaymentPreference(items, studentId);
-            
+
             // Verifica que el objeto de respuesta tenga un id
             if (!preference.id) {
                 throw new Error("No se encontró el ID en la respuesta de MercadoPago");
@@ -85,25 +85,25 @@ class paymentController {
     }
 
     // Webhook para recibir actualizaciones de Mercado Pago
-    static async paymentWebhook(req, res) {
-        const paymentData = req.body;
+    static async receiveWebhook(req, res) {
+        // const payment = req.query;
+        // console.log({payment})
+        const paymentId = req.query.id
 
         try {
-            const { id, status, payment_type, transaction_amount, description, additional_info } = paymentData;
-            console.log("INFORMACION DEL PAGO: ", paymentData)
+            const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`,{
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+            }
 
-            console.log("ID", id);
-            console.log("status", status);
-            console.log("payment_type", payment_type);
-            console.log("transaction_amount", transaction_amount);
-            console.log("description", description);
-            console.log("studentId desde additional_info:", additional_info?.studentId);  // Acceder a studentId
-
-            // Ahora puedes guardar la información en tu base de datos
-            const studentId = additional_info?.studentId;
-
-            // Llama al modelo para guardar la información en la base de datos
-            await PaymentModel.createPaymentRecord('mercadopago', id, status, transaction_amount, studentId);
+            // // Llama al modelo para guardar la información en la base de datos
+            // await PaymentModel.createPaymentRecord('mercadopago', id, 'completed', transaction_amount, studentId);
 
             res.sendStatus(200);  // Confirmar recepción del webhook
         } catch (error) {
