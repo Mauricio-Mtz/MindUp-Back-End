@@ -6,7 +6,6 @@ const client = new MercadoPagoConfig({
 class mercadoPagoService {
     static async createPaymentPreference(items, studentId) {
         try {
-            
             const body = {
                 items: items,
                 back_urls: {
@@ -16,18 +15,38 @@ class mercadoPagoService {
                 },
                 auto_return: "approved",
                 notification_url: 'https://mindup-back-end.onrender.com/payments/receive-mercadopago-webhook',
-                additional_info: JSON.stringify({ studentId: studentId }),
+                external_reference: studentId.toString() // Aquí envías el ID del usuario
             }
-
+    
             const preference = new Preference(client);
             const result = await preference.create({ body });
-
+    
             return { id: result.id };
         } catch (error) {
             console.error("Error al crear la preferencia de pago", error);
             throw new Error("Error creando la preferencia de pago");
         }
-    }
+    } 
+    
+    static async getPaymentDetails(paymentId) {
+        try {
+            const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Error al obtener los detalles del pago");
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error en MercadoPagoService.getPaymentDetails:", error);
+            throw error;
+        }
+    }   
 }
 
 module.exports = mercadoPagoService;
