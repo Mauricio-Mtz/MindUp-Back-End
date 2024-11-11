@@ -58,9 +58,9 @@ class paymentController {
                 // Registrar el pago en la base de datos usando el transactionId y el status
                 const paymentRecord = await PaymentModel.createPaymentRecord('PayPal', transactionId, status, amount, studentId);
     
-                res.json({ message: 'Pago completado correctamente.' });
+                res.json({ status: status, message: 'Pago completado correctamente.' });
             } else {
-                res.status(400).json({ status: status, message: 'Pago fallido.' });
+                res.status(400).json({ message: 'Pago fallido.' });
             }
         } catch (error) {
             console.error(error);
