@@ -60,7 +60,7 @@ class paymentController {
     
                 res.json({ message: 'Pago completado correctamente.' });
             } else {
-                res.status(400).json({ message: 'Pago fallido.' });
+                res.status(400).json({ status: status, message: 'Pago fallido.' });
             }
         } catch (error) {
             console.error(error);
