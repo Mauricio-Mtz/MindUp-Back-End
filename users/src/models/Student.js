@@ -20,6 +20,38 @@ class Student {
             UPDATE students SET fullname = ?, birthdate = ?, country = ?, grade = ? WHERE email = ?
         `, [fullname, birthdate, country, grade, email]);
     }
+
+    static async getCoursesByStudent(email) {
+        try {
+            // Obtener el ID del estudiante por su correo
+            const [studentResults] = await db.query(
+                'SELECT id FROM students WHERE email = ?',
+                [email]
+            );
+    
+            // Si no se encuentra al estudiante, lanzamos un error
+            if (studentResults.length === 0) {
+                throw new Error('Estudiante no encontrado');
+            }
+    
+            const studentId = studentResults[0].id;
+    
+            // Obtener los cursos a los que está inscrito el estudiante, junto con el nombre de la organización
+            const [courses] = await db.query(
+                `SELECT c.id, c.name, c.description, c.img, o.name AS organization
+                FROM courses c
+                INNER JOIN user_courses uc ON c.id = uc.course_id
+                INNER JOIN organizations o ON c.organization_id = o.id
+                WHERE uc.student_id = ? AND c.status = 1`, 
+                [studentId]
+            );
+    
+            // Retornamos los cursos encontrados
+            return courses;
+        } catch (err) {
+            throw err;
+        }
+    }
 }
 
 module.exports = Student;

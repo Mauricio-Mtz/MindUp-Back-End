@@ -3,9 +3,20 @@ const db = require('../../config/db');
 class CourseModel {
     // Obtener todos los cursos
     static async getAllCourses() {
-        const [courses] = await db.query('SELECT * FROM courses');
-        return courses;
-    }
+        try {
+            // Obtener todos los cursos junto con el nombre de la organización
+            const [courses] = await db.query(
+                `SELECT c.id, c.name, c.description, c.img, o.name AS organization
+                FROM courses c
+                INNER JOIN organizations o ON c.organization_id = o.id`
+            );
+    
+            // Retornamos los cursos encontrados
+            return courses;
+        } catch (err) {
+            throw err;
+        }
+    }    
 
     // Crear un nuevo curso
     static async createCourse(name, description) {
