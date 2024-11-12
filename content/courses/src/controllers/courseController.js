@@ -130,6 +130,59 @@ class CourseController {
             res.status(500).json({ message: 'Error al obtener el curso', error });
         }
     }
+
+    static async getCatalog(req, res) {
+        try {
+            const { email } = req.query;
+    
+            // Obtener las preferencias del estudiante
+            const response = await fetch(`http://localhost:3000/users/getUser?email=${email}`, {
+                method: 'GET'
+            });
+            const studentResponse = await response.json();
+            const student = studentResponse.data;
+    
+            if (!student) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Student not found'
+                });
+            }
+    
+            // Vector de preferencias del estudiante
+            const preferences = student.preferences;
+    
+            // Obtener todos los cursos
+            const allCourses = await Course.getAllCourses();
+    
+            // Filtrar cursos basados en las preferencias
+            const matchingCourses = allCourses.filter(course => {
+                const courseCategories = course.category;
+                return preferences.some(pref => courseCategories.includes(pref));
+            });
+    
+            if (matchingCourses.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    message: 'No hay cursos que coincidan con las preferencias del estudiante.',
+                    data: []
+                });
+            } else {
+                return res.status(200).json({
+                    success: true,
+                    message: 'Cursos obtenidos correctamente según las preferencias del estudiante.',
+                    data: matchingCourses
+                });
+            }
+        } catch (error) {
+            console.error('Error al obtener el catálogo de cursos:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error al obtener el catálogo de cursos',
+                error: error.message
+            });
+        }
+    }
 }
 
 module.exports = CourseController;

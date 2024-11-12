@@ -40,9 +40,9 @@ class Student {
             const [courses] = await db.query(
                 `SELECT c.id, c.name, c.description, c.img, o.name AS organization
                 FROM courses c
-                INNER JOIN user_courses uc ON c.id = uc.course_id
+                INNER JOIN student_courses sc ON c.id = sc.course_id
                 INNER JOIN organizations o ON c.organization_id = o.id
-                WHERE uc.student_id = ? AND c.status = 1`, 
+                WHERE sc.student_id = ? AND c.status = 1`, 
                 [studentId]
             );
     
