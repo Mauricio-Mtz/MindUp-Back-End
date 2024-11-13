@@ -7,7 +7,6 @@ const Organization = require('../models/Organization');
 class AuthController {
     static async login(req, res) {
         const { type, email, password } = req.body;
-        console.log("HOLA");
         try {
             let user;
             let typeUser = '';
@@ -152,7 +151,7 @@ class AuthController {
     
 
     static async completeRegister(req, res) {
-        const { typeUser, email, password, name, birthdate, country, grade, address, token, rfc, fiscalAddress, fiscalRegime } = req.body;
+        const { typeUser, email, password, name, birthdate, country, grade, address, token, rfc, fiscalAddress, fiscalRegime, preferences } = req.body;
         let result;
 
         try {
@@ -161,7 +160,7 @@ class AuthController {
             // Actualizar datos del usuario según el tipo
             switch (typeUser) {
                 case 'student':
-                    result = await Student.updateDetails(email, name, hashedPassword, birthdate, country, grade);
+                    result = await Student.updateDetails(email, name, hashedPassword, birthdate, country, grade, preferences);
                     break;
                 case 'member':
                     result = await Member.updateDetails(email, name, hashedPassword, country, token);

@@ -1,8 +1,7 @@
-// controllers/CourseController.js
-const axios = require('axios');
 const Course = require('../models/Course');
+const Module = require('../models/Module');
 
-class CourseController {
+class ContentController {
     static async getAllCourses(req, res) {
         try {
             const courses = await Course.getAllCourses();
@@ -97,7 +96,6 @@ class CourseController {
     }
 
     static async getCourse(req, res) {
-        
         const { id } = req.params;
         try {
             // Obtener el curso
@@ -109,14 +107,13 @@ class CourseController {
                 });
             }
     
-            // Hacer solicitud a otro microservicio para obtener los módulos del curso con Axios
-            const response = await axios.get(`http://localhost:3003/getModulesForCourses/${id}`);
-            const modules = response.data;
+            // Obtener los modulos del curso
+            const modules = await Module.getModulesForCourses(id);
     
             // Unir el curso y los módulos en un solo JSON
             const courseWithModules = {
                 ...course,
-                modules: modules.data
+                modules: modules
             };
     
             // Enviar la respuesta con el JSON combinado
@@ -183,6 +180,56 @@ class CourseController {
             });
         }
     }
+
+    static async getCategories(req, res) {
+        try {
+            const categories = await Course.getCategories();
+    
+            if (categories.length === 0) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'No hay categorias.',
+                    data: []
+                });
+            } else {
+                return res.status(200).json({
+                    success: true,
+                    message: 'Categorias obtenidas correctamente.',
+                    data: categories  // Ahora es un array simple de nombres de categorías
+                });
+            }
+        } catch (error) {
+            console.error('Error al obtener las categorias:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error al obtener las categorias',
+                error: error.message
+            });
+        }
+    }
+
+    static async getModuleDetail(req, res) {
+        const { id } = req.params;
+        try {
+            const moduleDetail = await Module.getModuleDetail(id);
+            console.log(moduleDetail)
+            if (!moduleDetail) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Modulo no encontrado."
+                });
+            }
+            // Enviar la respuesta con el JSON combinado
+            res.status(200).json({
+                success: true,
+                message: "Modulo obtenido correctamente.",
+                data: moduleDetail
+            });
+        } catch (error) {
+            console.error('Error al obtener el curso: ', error.message);
+            res.status(500).json({ message: 'Error al obtener el detalle del modulo: ', error });
+        }
+    }
 }
 
-module.exports = CourseController;
+module.exports = ContentController;

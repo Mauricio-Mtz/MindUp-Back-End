@@ -1,6 +1,6 @@
 const db = require('../../config/db');
 
-class CourseModel {
+class Course {
     // Obtener todos los cursos
     static async getAllCourses() {
         try {
@@ -49,6 +49,30 @@ class CourseModel {
 
         return courses.length > 0 ? courses[0] : null;
     }
+
+    static async getCategories() {
+        try {
+            const [courses] = await db.query(`
+                SELECT category FROM courses;
+            `);
+            
+            // Extraer categorías y eliminar duplicados usando JavaScript
+            const categoriesSet = new Set();
+            
+            courses.forEach(course => {
+                // Asegurarnos de que category esté presente y sea un JSON parseable
+                if (course.category) {
+                    const categoriesArray = course.category;
+                    categoriesArray.forEach(cat => categoriesSet.add(cat));
+                }
+            });
+    
+            // Convertir Set a array
+            return Array.from(categoriesSet);
+        } catch (err) {
+            throw err;
+        }
+    }    
 }
 
-module.exports = CourseModel;
+module.exports = Course;

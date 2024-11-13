@@ -24,26 +24,11 @@ module.exports = {
         }
       },
       {
-        name: 'courses',
-        script: './content/courses/index.js',
+        name: 'content',
+        script: './content/index.js',
         env: {
           NODE_ENV: 'production',
-          COURSES_PORT: process.env.COURSES_PORT,
-          
-          DB_HOST: process.env.DB_HOST,
-          DB_USER: process.env.DB_USER,
-          DB_PASSWORD: process.env.DB_PASSWORD,
-          DB_NAME: process.env.DB_NAME,
-          
-          JWT_SECRET: process.env.JWT_SECRET
-        }
-      },
-      {
-        name: 'modules',
-        script: './content/modules/index.js',
-        env: {
-          NODE_ENV: 'production',
-          MODULES_PORT: process.env.MODULES_PORT,
+          COURSES_PORT: process.env.CONTENT_PORT,
           
           DB_HOST: process.env.DB_HOST,
           DB_USER: process.env.DB_USER,

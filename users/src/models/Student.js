@@ -52,6 +52,43 @@ class Student {
             throw err;
         }
     }
+
+    static async enrollCourse(courseId, studentEmail) {
+        try {
+            // Obtener el ID del estudiante por su correo
+            const [studentResults] = await db.query(
+                'SELECT id FROM students WHERE email = ?',
+                [studentEmail]
+            );
+
+            // Si no se encuentra al estudiante, lanzamos un error
+            if (studentResults.length === 0) {
+                throw new Error('Estudiante no encontrado');
+            }
+            const studentId = studentResults[0].id;
+
+            // Verificar si el estudiante ya está inscrito en el curso
+            const [existingEnrollment] = await db.query(
+                'SELECT * FROM student_courses WHERE student_id = ? AND course_id = ?',
+                [studentId, courseId]
+            );
+
+            if (existingEnrollment.length > 0) {
+                throw new Error('El estudiante ya está inscrito en este curso');
+            }
+
+            // Insertar la inscripción en la tabla student_courses
+            await db.query(
+                'INSERT INTO student_courses (student_id, course_id, level, progress) VALUES (?, ?, 1, 0)',
+                [studentId, courseId]
+            );
+
+            // Retornar un mensaje de éxito
+            return { success: true, message: 'Inscripción exitosa al curso' };
+        } catch (err) {
+            throw err;
+        }
+    }
 }
 
 module.exports = Student;

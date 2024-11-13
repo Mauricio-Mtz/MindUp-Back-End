@@ -26,13 +26,15 @@ class Student {
     }    
 
     static async findByEmail(email) {
-        const [rows] = await db.execute(`SELECT email FROM students WHERE email = ?`, [email]);
+        const [rows] = await db.execute(`SELECT email, password, preferences FROM students WHERE email = ?`, [email]);
         return rows[0];
     }
 
-    static async updateDetails(email, name, password, birthdate, country, grade) {
+    static async updateDetails(email, name, password, birthdate, country, grade, preferences) {
         // Primero, buscamos el ID del estudiante utilizando su email
         const [idUser] = await db.execute(`SELECT id FROM students WHERE email = ?`, [email]);
+        
+        console.log("Preferencias del estudiante", preferences);
         
         // Validamos si el estudiante existe
         if (idUser.length === 0) {
@@ -42,8 +44,8 @@ class Student {
         const id = idUser[0].id; // Obtenemos el ID del estudiante
     
         // Construimos la consulta de actualización
-        let query = `UPDATE students SET birthdate = ?, country = ?, grade = ?`;
-        const params = [birthdate, country, grade]; // Parametros obligatorios
+        let query = `UPDATE students SET birthdate = ?, country = ?, grade = ?, preferences = ?`;
+        const params = [birthdate, country, grade, JSON.stringify(preferences)]; // Parametros obligatorios con preferencias
     
         // Verificamos si el nombre fue proporcionado
         if (name !== "") {
@@ -63,11 +65,11 @@ class Student {
     
         // Ejecutamos la consulta
         let result = await db.execute(query, params);
-
+    
         if (result[0].affectedRows > 0) {
             return true;
         } else {
-            return false
+            return false;
         }
     }    
 }

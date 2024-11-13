@@ -11,5 +11,6 @@ router.delete('/delete/:id', CourseController.deleteCourse);
 router.get('/getCourse/:id', CourseController.getCourse);
 
 router.get('/getCatalog', CourseController.getCatalog);
+router.get('/getCategories', CourseController.getCategories);
 
 module.exports = router;
