@@ -19,22 +19,10 @@ npm install
 cd ..
 
 # Instalando dependencias en courses
-echo "Instalando dependencias en courses..."
-cd content/courses
+echo "Instalando dependencias en content..."
+cd content
 npm install
-cd ../..
-
-# Instalando dependencias en courses
-echo "Instalando dependencias en modules..."
-cd content/modules
-npm install
-cd ../..
-
-# Instalando dependencias en courses
-# echo "Instalando dependencias en quizzes..."
-# cd content/quizzes
-# npm install
-# cd ../..
+cd ..
 
 # Instalando dependencias en courses
 echo "Instalando dependencias en users..."
@@ -45,6 +33,12 @@ cd ..
 # Instalando dependencias en courses
 echo "Instalando dependencias en payments..."
 cd payments
+npm install
+cd ..
+
+# Instalando dependencias en courses
+echo "Instalando dependencias en notifications..."
+cd notifications
 npm install
 cd ..
 
