@@ -129,6 +129,26 @@ class AuthController {
                 default:
                     return res.status(400).json({ success: false, message: 'El tipo de usuario no es valido' });
             }
+
+            // Enviar correo de bienvenida por el registro
+            await fetch('http://localhost:3000/notifications/createNotification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                },
+                body: JSON.stringify({
+                    to: email,  // Dirección de correo del destinatario (el correo del usuario registrado)
+                    subject: "¡Bienvenido a MindUp!", // Asunto del correo
+                    text: `Hola ${name},\n\n¡Gracias por registrarte en MindUp! Estamos emocionados de tenerte con nosotros. 
+                    Tu cuenta ha sido creada con éxito. Ahora podrás comenzar a aprovechar todos los beneficios que ofrecemos.
+
+                    Si tienes alguna duda o necesitas ayuda, no dudes en ponerte en contacto con nuestro soporte.
+
+                    ¡Bienvenido a la comunidad de MindUp!
+
+                    Saludos,\nEl equipo de MindUp` // Cuerpo del correo con un mensaje de bienvenida personalizado
+                }),
+            });  
     
             // Agregar el typeUser al objeto de usuario
             user = { ...user, type: typeUser };

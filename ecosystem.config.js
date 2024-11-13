@@ -58,7 +58,7 @@ module.exports = {
         script: './payments/index.js',
         env: {
           NODE_ENV: 'production',
-          USERS_PORT: process.env.PAYMENTS_PORT,
+          PAYMENTS_PORT: process.env.PAYMENTS_PORT,
           PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
           PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
           ACCESS_TOKEN: process.env.ACCESS_TOKEN,
@@ -67,6 +67,19 @@ module.exports = {
           DB_USER: process.env.DB_USER,
           DB_PASSWORD: process.env.DB_PASSWORD,
           DB_NAME: process.env.DB_NAME,
+          
+          JWT_SECRET: process.env.JWT_SECRET
+        }
+      },
+      {
+        name: 'notifications',
+        script: './notifications/index.js',
+        env: {
+          NODE_ENV: 'production',
+          NOTIFICATIONS_PORT: process.env.NOTIFICATIONS_PORT,
+          
+          EMAIL_USER: process.env.EMAIL_USER,
+          EMAIL_PASS: process.env.EMAIL_PASS,
           
           JWT_SECRET: process.env.JWT_SECRET
         }

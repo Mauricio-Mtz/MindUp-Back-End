@@ -32,12 +32,20 @@ app.use('/users', createProxyMiddleware({
         '^/users': '/getUser',
     },
 }));
-// Middleware para el servicio de usuarios
+// Middleware para el servicio de pagos
 app.use('/payments', createProxyMiddleware({
     target: 'http://localhost:3006',
     changeOrigin: true,
     pathRewrite: {
         '^/payments': '/getPaymentsByStudent',
+    },
+}));
+// Middleware para el servicio de notificaciones
+app.use('/notifications', createProxyMiddleware({
+    target: 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/notifications': '/',
     },
 }));
 

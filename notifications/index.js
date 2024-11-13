@@ -11,7 +11,7 @@ app.use(express.json());
 // Routes
 app.use('/', notificationRoutes);
 
-const PORT = process.env.NOTIFICATION_PORT;
+const PORT = process.env.NOTIFICATIONS_PORT;
 app.listen(PORT, () => {
     console.log(`Notification - ${PORT}`);
 });

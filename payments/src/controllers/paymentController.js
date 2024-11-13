@@ -56,8 +56,34 @@ class paymentController {
     
             if (status === 'COMPLETED') {  // Verificar si el pago fue exitoso
                 // Registrar el pago en la base de datos usando el transactionId y el status
-                const paymentRecord = await PaymentModel.createPaymentRecord('PayPal', transactionId, status, amount, studentId);
-    
+                await PaymentModel.createPaymentRecord('PayPal', transactionId, status, amount, studentId);
+
+                await fetch('http://localhost:3000/notifications/createNotification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                    },
+                    body: JSON.stringify({
+                        to: studentEmail,  // Dirección de correo del destinatario (el correo del usuario registrado)
+                        subject: "Confirmación de pago y acceso a MindUp", // Asunto del correo
+                        text: `Hola,\n\n¡Gracias por tu pago! Hemos recibido con éxito tu suscripción a MindUp. Aquí están los detalles de tu pago:
+                
+                                - **Método de pago**: PayPal  
+                                - **ID de transacción**: ${transactionId}  
+                                - **Estado de la transacción**: ${status}  
+                                - **Monto pagado**: $${amount.toFixed(2)}  
+                                - **Fecha de pago**: ${new Date().toLocaleDateString()}
+                
+                                Gracias a tu pago, ahora tienes acceso completo a los cursos y materiales educativos en MindUp. Puedes comenzar tu aprendizaje de inmediato y aprovechar todos los beneficios que ofrecemos.
+                
+                                Si en cualquier momento tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.
+                
+                                ¡Bienvenido a la comunidad MindUp, y disfruta de tu experiencia educativa con nosotros!
+                
+                                Saludos,\nEl equipo de MindUp` // Cuerpo del correo con los detalles del pago y bienvenida
+                    }),
+                });                
+                
                 res.json({ status: status, message: 'Pago completado correctamente.' });
             } else {
                 res.status(400).json({ message: 'Pago fallido.' });
@@ -104,7 +130,32 @@ class paymentController {
             const studentId = await Student.findByEmail(external_reference);
             // Crea el registro de pago
             await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
-            console.log("Pago procesado con éxito");
+            
+            await fetch('http://localhost:3000/notifications/createNotification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                },
+                body: JSON.stringify({
+                    to: external_reference,  // Dirección de correo del destinatario (el correo del usuario registrado)
+                    subject: "Confirmación de pago y acceso a MindUp", // Asunto del correo
+                    text: `Hola,\n\n¡Gracias por tu pago! Hemos recibido con éxito tu suscripción a MindUp. Aquí están los detalles de tu pago:
+            
+                            - **Método de pago**: MercadoPago 
+                            - **ID de transacción**: ${paymentId}  
+                            - **Estado de la transacción**: ${status}  
+                            - **Monto pagado**: $${transaction_amount.toFixed(2)}  
+                            - **Fecha de pago**: ${new Date().toLocaleDateString()}
+            
+                            Gracias a tu pago, ahora tienes acceso completo a los cursos y materiales educativos en MindUp. Puedes comenzar tu aprendizaje de inmediato y aprovechar todos los beneficios que ofrecemos.
+            
+                            Si en cualquier momento tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.
+            
+                            ¡Bienvenido a la comunidad MindUp, y disfruta de tu experiencia educativa con nosotros!
+            
+                            Saludos,\nEl equipo de MindUp` // Cuerpo del correo con los detalles del pago y bienvenida
+                }),
+            });      
     
             res.sendStatus(200);
         } catch (error) {
