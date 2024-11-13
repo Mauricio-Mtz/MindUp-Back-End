@@ -3,6 +3,7 @@ const PaymentModel = require('../models/Payment');
 
 const PaypalService = require('../services/paypalService');
 const MercadoPagoService = require('../services/mercadoPagoService');
+const SubscriptionService = require('../services/subscriptionService');
 
 class paymentController {
     static async getPaymentsByStudent(req, res) {
@@ -56,7 +57,7 @@ class paymentController {
     
             if (status === 'COMPLETED') {  // Verificar si el pago fue exitoso
                 // Registrar el pago en la base de datos usando el transactionId y el status
-                await PaymentModel.createPaymentRecord('PayPal', transactionId, status, amount, studentId);
+                await SubscriptionService.procesarPagoYActualizarSuscripcion('PayPal', transactionId, status, amount, studentId);
 
                 await fetch('http://localhost:3000/notifications/createNotification', {
                     method: 'POST',
@@ -129,7 +130,7 @@ class paymentController {
             // Busca al estudiante asociado al pago
             const studentId = await Student.findByEmail(external_reference);
             // Crea el registro de pago
-            await PaymentModel.createPaymentRecord('mercadopago', paymentId, status, transaction_amount, studentId);
+            await SubscriptionService.procesarPagoYActualizarSuscripcion('mercadopago', paymentId, status, transaction_amount, studentId);
             
             await fetch('http://localhost:3000/notifications/createNotification', {
                 method: 'POST',
@@ -162,7 +163,7 @@ class paymentController {
             console.error('Error al procesar el webhook en PaymentController:', error);
             res.sendStatus(500);
         }
-    }    
+    }
 }
 
 module.exports = paymentController;

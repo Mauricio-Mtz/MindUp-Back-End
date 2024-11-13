@@ -37,7 +37,7 @@ app.use('/payments', createProxyMiddleware({
     target: 'http://localhost:3006',
     changeOrigin: true,
     pathRewrite: {
-        '^/payments': '/getPaymentsByStudent',
+        '^/payments': '/',
     },
 }));
 // Middleware para el servicio de notificaciones
