@@ -42,4 +42,10 @@ cd notifications
 npm install
 cd ..
 
+# Instalando dependencias en reportes
+echo "Instalando dependencias en reports..."
+cd reports
+npm install
+cd ..
+
 echo "Instalación de dependencias completada!"

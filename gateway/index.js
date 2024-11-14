@@ -16,6 +16,7 @@ app.use('/auth', createProxyMiddleware({
         '^/auth': '/auth', // Reescribe la ruta para que coincida con las rutas en el microservicio
     },
 }));
+
 // Middleware para el servicio de cursos
 app.use('/content', createProxyMiddleware({
     target: 'http://localhost:3002', // Dirección del microservicio de cursos
@@ -24,6 +25,16 @@ app.use('/content', createProxyMiddleware({
         '^/content': '/getAllCourses', // Reescribe la ruta para que coincida con las rutas en el microservicio
     },
 }));
+
+// Middleware para el servicio de notificaciones
+app.use('/notifications', createProxyMiddleware({
+    target: 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/notifications': '/',
+    },
+}));
+
 // Middleware para el servicio de usuarios
 app.use('/users', createProxyMiddleware({
     target: 'http://localhost:3005',
@@ -32,20 +43,22 @@ app.use('/users', createProxyMiddleware({
         '^/users': '/getUser',
     },
 }));
+
+// Middleware para el servicio de reports
+app.use('/reports', createProxyMiddleware({
+    target: 'http://localhost:3004',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/reports': '/',
+    },
+}));
+
 // Middleware para el servicio de pagos
 app.use('/payments', createProxyMiddleware({
     target: 'http://localhost:3006',
     changeOrigin: true,
     pathRewrite: {
         '^/payments': '/',
-    },
-}));
-// Middleware para el servicio de notificaciones
-app.use('/notifications', createProxyMiddleware({
-    target: 'http://localhost:3003',
-    changeOrigin: true,
-    pathRewrite: {
-        '^/notifications': '/',
     },
 }));
 
