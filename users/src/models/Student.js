@@ -104,7 +104,7 @@ class Student {
         } catch (err) {
             throw err;
         }
-    }    
+    }
 }
 
 module.exports = Student;
