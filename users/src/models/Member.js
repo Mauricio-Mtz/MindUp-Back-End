@@ -1,6 +1,11 @@
 const db = require('../../config/db');
 
 class Member {
+    static async getAll() {
+        const [rows] = await db.execute(`SELECT id, fullname, email, country, status FROM members`);
+        return rows;
+    }
+
     static async findByEmail(email) {
         const [rows] = await db.execute(`SELECT * FROM members WHERE email = ?`, [email]);
         return rows[0];

@@ -12,4 +12,6 @@ router.put('/updateInformation', UserController.updateInformation);
 router.post('/enrollCourse', UserCoursesController.enrollCourse);
 router.get('/getCoursesByStudent', UserCoursesController.getCoursesByStudent);
 
+router.get('/getMembers', UserController.getMembers);
+
 module.exports = router;

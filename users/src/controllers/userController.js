@@ -185,6 +185,32 @@ class UserController {
             });
         }
     }
+
+    static async getMembers(req, res) {
+        try {
+            const members = await Member.getAll();
+
+            if (!members) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'No hay miembros.',
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'Miembros encontrado.',
+                data: members,
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Búsqueda de miembros fallida.',
+                error: error.message,
+            });
+        }
+    }
 }
 
 module.exports = UserController;
