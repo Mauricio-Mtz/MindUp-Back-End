@@ -194,7 +194,7 @@ class AuthController {
 
             // Enviar respuesta con la actualización exitosa
             if (result.success) {
-                if (typeUser === 'member') {
+                if (typeUser === 'member' || typeUser === 'organization') {
                     return res.status(200).json({
                         success: true,
                         message: 'Detalles actualizados correctamente',
