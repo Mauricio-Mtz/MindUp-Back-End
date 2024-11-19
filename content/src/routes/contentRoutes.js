@@ -13,6 +13,8 @@ router.get('/getCourse/:id', ContentController.getCourse);
 router.get('/getCatalog', ContentController.getCatalog);
 router.get('/getCategories', ContentController.getCategories);
 router.get('/getModuleDetail/:id', ContentController.getModuleDetail);
+router.put('/addNewContent', ContentController.addNewContent);
+router.put('/addNewQuestion', ContentController.addNewQuestion);
 
 router.get('/getCoursesByOrganization/:id', ContentController.getCoursesByOrganization);
 
