@@ -108,7 +108,7 @@ class ContentController {
             }
     
             // Obtener los modulos del curso
-            const modules = await Module.getModulesForCourses(id);
+            const modules = await Module.getModuleDetail(id);
     
             // Unir el curso y los módulos en un solo JSON
             const courseWithModules = {
