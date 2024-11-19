@@ -5,7 +5,7 @@ class ReportModel {
   static async reportCourses(report, name) {
     let query = ` SELECT 
                     name curso, 
-                    descriptiondescripcion, 
+                    description descripcion, 
                     REPLACE(REPLACE(REPLACE(JSON_UNQUOTE(JSON_EXTRACT(category, '$')),'"',''), '[', ''), ']', '') AS categoria,
                     CASE 
                         WHEN status = 1 THEN 'Activo'

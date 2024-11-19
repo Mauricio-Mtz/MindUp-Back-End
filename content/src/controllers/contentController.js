@@ -230,6 +230,28 @@ class ContentController {
             res.status(500).json({ message: 'Error al obtener el detalle del modulo: ', error });
         }
     }
+    
+    static async getCoursesByOrganization(req, res) {
+        const { id } = req.params;
+        try {
+            const courses = await Course.getCoursesByOrganization(id);
+            if (courses.length === 0){
+                res.status(200).json({
+                    success: true,
+                    message: "No hay cursos."
+                });
+            } else {
+                res.status(200).json({
+                    success: true,
+                    message: "Cursos obtenidos correctamente.",
+                    data: courses
+                });
+            }
+        } catch (error) {
+            console.error('Error al obtener los cursos:', error.message);
+            res.status(500).json({ message: 'Error al obtener los cursos', error });
+        }
+    }
 }
 
 module.exports = ContentController;
