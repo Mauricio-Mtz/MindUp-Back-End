@@ -16,4 +16,6 @@ router.get('/getModuleDetail/:id', ContentController.getModuleDetail);
 router.put('/addNewContent', ContentController.addNewContent);
 router.put('/addNewQuestion', ContentController.addNewQuestion);
 
+router.get('/getCoursesByOrganization/:id', ContentController.getCoursesByOrganization);
+
 module.exports = router;

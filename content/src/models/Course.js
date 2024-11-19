@@ -73,6 +73,30 @@ class Course {
             throw err;
         }
     }    
+    
+    // Obtener todos los cursos
+    static async getCoursesByOrganization(id) {
+        try {
+            const [courses] = await db.query(
+                `SELECT 
+                    c.id, 
+                    c.name, 
+                    c.description, 
+                    (
+                        SELECT COUNT(*)
+                        FROM student_courses sc
+                        WHERE sc.course_id = c.id
+                    ) AS participants,
+                    c.status
+                FROM courses c
+                INNER JOIN organizations o ON c.organization_id = o.id
+                WHERE o.id = ?;`, [id]
+            );
+            return courses;
+        } catch (err) {
+            throw err;
+        }
+    }   
 }
 
 module.exports = Course;
