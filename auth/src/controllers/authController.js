@@ -193,11 +193,21 @@ class AuthController {
             }
 
             // Enviar respuesta con la actualización exitosa
-            if (result) {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Detalles actualizados correctamente',
-                });
+            if (result.success) {
+                if (typeUser === 'member') {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Detalles actualizados correctamente',
+                        type: typeUser,
+                        data: result.data,
+                    });
+                } else {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Detalles actualizados correctamente',
+                        type: typeUser,
+                    });
+                }
             } else {
                 return res.status(200).json({
                     success: false,
