@@ -230,6 +230,70 @@ class ContentController {
             res.status(500).json({ message: 'Error al obtener el detalle del modulo: ', error });
         }
     }
+
+    static async addNewContent(req, res) {
+        const { content, id, courseId } = req.body;
+
+        if (!id && !courseId) {
+            return res.status(400).json({ message: 'Ids no encontradas' });
+        }
+
+        try {
+            const affectedRows = await Module.addNewContent(content,id,courseId);
+            if (affectedRows === 0) {
+                return res.status(404).json({
+                    success: false, 
+                    message: 'Curso no encontrado',
+                    rows: 0 
+                });
+            }
+            res.status(200).json({
+                success: true,
+                message: "Contenido agregado correctamente.",
+                rows: affectedRows 
+            });
+            
+        } catch (error) {
+            console.error('Error al actualizar el curso:', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Error del servidor',
+                rows: -1 
+            });
+        }
+    }
+
+    static async addNewQuestion(req, res) {
+        const { quiz, id, courseId } = req.body;
+
+        if (!id && !courseId) {
+            return res.status(400).json({ message: 'Ids no encontradas' });
+        }
+
+        try {
+            const affectedRows = await Module.addNewQuestion(quiz,id,courseId);
+            if (affectedRows === 0) {
+                return res.status(404).json({
+                    success: false, 
+                    message: 'Curso no encontrado',
+                    rows: 0 
+                });
+            }
+            res.status(200).json({
+                success: true,
+                message: "Contenido agregado correctamente.",
+                rows: affectedRows 
+            });
+            
+        } catch (error) {
+            console.error('Error al actualizar el curso:', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Error del servidor',
+                rows: -1 
+            });
+        }
+    }
 }
 
 module.exports = ContentController;
