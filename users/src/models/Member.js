@@ -1,8 +1,8 @@
 const db = require('../../config/db');
 
 class Member {
-    static async getAll() {
-        const [rows] = await db.execute(`SELECT id, fullname, email, country, status FROM members`);
+    static async getByOrganization(id) {
+        const [rows] = await db.execute(`SELECT id, fullname, email, country, status FROM members WHERE organization_id = ?`, [id]);
         return rows;
     }
 
@@ -24,6 +24,10 @@ class Member {
         await db.execute(`
             UPDATE members SET fullname = ?, birthdate = ?, country = ?, membership = ? WHERE email = ?
         `, [fullname, birthdate, country, membership, email]);
+    }
+
+    static async delete(email) {
+        await db.execute(`DELETE FROM members WHERE email = ?`, [email]);
     }
 }
 

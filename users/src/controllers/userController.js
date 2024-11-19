@@ -187,8 +187,9 @@ class UserController {
     }
 
     static async getMembers(req, res) {
+        const { id } = req.params;
         try {
-            const members = await Member.getAll();
+            const members = await Member.getByOrganization(id);
 
             if (!members) {
                 return res.status(200).json({
@@ -207,6 +208,41 @@ class UserController {
             return res.status(500).json({
                 success: false,
                 message: 'Búsqueda de miembros fallida.',
+                error: error.message,
+            });
+        }
+    }
+
+    static async deleteUser(req, res) {
+        const { email, type } = req.body;
+
+        try {
+            switch (type) {
+                case 'student':
+                    await Student.delete(email);
+                    break;
+                case 'member':
+                    await Member.delete(email);
+                    break;
+                case 'organization':
+                    await Organization.delete(email);
+                    break;
+                default:
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Tipo de usuario desconocido.',
+                    });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'Usuario eliminado.'
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Eliminacion de usuario fallida.',
                 error: error.message,
             });
         }
