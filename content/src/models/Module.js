@@ -15,10 +15,10 @@ class Module {
         const [moduleDetail] = await db.query(`
             SELECT *
             FROM modules
-            WHERE id = ?
+            WHERE course_id = ?
         `, [id]);
 
-        return moduleDetail[0];
+        return moduleDetail;
     }
 }
 
