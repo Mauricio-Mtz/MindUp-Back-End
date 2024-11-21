@@ -330,6 +330,38 @@ class ContentController {
         }
     }
 
+    static async addNewModule(req, res) {
+        const { name, level, courseId } = req.body;
+
+        if ( !courseId) {
+            return res.status(400).json({ message: 'Id no encontrada' });
+        }
+
+        try {
+            const affectedRows = await Module.addNewModule(name, level, courseId);
+            if (affectedRows === 0) {
+                return res.status(404).json({
+                    success: false, 
+                    message: 'Curso no encontrado',
+                    rows: 0 
+                });
+            }
+            res.status(200).json({
+                success: true,
+                message: "Contenido agregado correctamente.",
+                rows: affectedRows 
+            });
+            
+        } catch (error) {
+            console.error('Error al actualizar el curso:', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Error del servidor',
+                rows: -1 
+            });
+        }
+    }
+
     static async desactiveCourse(req, res) {
         const { id } = req.body;
 
