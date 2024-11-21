@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "pdfkit-table": "^0.1.99",
     "pm2": "^5.4.2"
   }
 }
