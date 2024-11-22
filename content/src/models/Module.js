@@ -64,6 +64,18 @@ class Module {
 
         return result.affectedRows;
     }
+
+    static async addNewModule(name, level, courseId) {        
+        
+
+        // Realiza el query
+        const [result] = await db.query(`
+            INSERT INTO modules (name, level, course_id) VALUES (?, ?, ?)
+            `,[name, level, courseId]
+        );
+
+        return result.affectedRows;
+    }
 }
 
 module.exports = Module;

@@ -16,6 +16,7 @@ router.get('/getModuleDetail/:id', ContentController.getModuleDetail);
 router.post('/addNewCourse', ContentController.addNewCourse);
 router.put('/addNewContent', ContentController.addNewContent);
 router.put('/addNewQuestion', ContentController.addNewQuestion);
+router.put('/addNewModule', ContentController.addNewModule);
 router.put('/desactiveCourse', ContentController.desactiveCourse);
 
 

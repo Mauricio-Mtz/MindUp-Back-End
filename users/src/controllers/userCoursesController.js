@@ -1,18 +1,27 @@
 const Student = require('../models/Student');
+const userController = require('./userController')
+const LevelSystemController = require('./LevelSystemController');
 
 class UserCursesController {
     static async enrollCourse(req, res) {
         const { courseId, studentEmail } = req.body;
     
         try {
-            // Llamada al método de inscripción
+            // Llamar al método del modelo
             const result = await Student.enrollCourse(courseId, studentEmail);
-            
-            // Obtener el nombre del curso y el correo del estudiante (deberías tener esta información)
-            const courseName = result.course.name;  // Nombre del curso
-            const { name, email } = result.student; // Asumiendo que el resultado de enrollCourse devuelve también los datos del estudiante
-
-            // Enviar correo de bienvenida con detalles sobre el curso
+    
+            // Verificar si el modelo retornó un error manejado
+            if (!result.success) {
+                return res.status(200).json({
+                    success: false,
+                    message: result.message,
+                });
+            }
+    
+            // Enviar correo de bienvenida
+            const { name, email } = result.student;
+            const courseName = result.course.name;
+    
             await fetch('http://localhost:3000/notifications/createNotification', {
                 method: 'POST',
                 headers: {
@@ -20,7 +29,7 @@ class UserCursesController {
                 },
                 body: JSON.stringify({
                     to: email,  // Dirección de correo del destinatario (el correo del usuario registrado)
-                    subject: "¡Bienvenido a MindUp!", // Asunto del correo
+                    subject: "¡Inscripción a curso!", // Asunto del correo
                     text: `Hola ${name},\n\n¡Felicidades! Te has inscrito con éxito en el curso "${courseName}" en MindUp. Estamos muy emocionados de que te unas a nuestra plataforma educativa.
             
                             A continuación, podrás acceder a los materiales del curso y comenzar tu aprendizaje. Estamos aquí para apoyarte en cada paso del camino, por lo que no dudes en ponerte en contacto con nosotros si necesitas alguna asistencia.
@@ -33,18 +42,18 @@ class UserCursesController {
             
                             Saludos,\nEl equipo de MindUp` // Cuerpo del correo con un mensaje de bienvenida personalizado
                 }),
-            });                 
+            });        
     
-            // Enviar respuesta de éxito
+            // Respuesta de éxito
             return res.status(200).json({
                 success: true,
                 message: result.message,
             });
         } catch (error) {
-            // Enviar respuesta de error
+            // Respuesta de error no manejado
             return res.status(500).json({
                 success: false,
-                message: `Ocurrió un error al intentar asignar el curso al estudiante ${studentEmail}.`,
+                message: 'Error inesperado al inscribir al estudiante en el curso.',
                 error: error.message,
             });
         }
@@ -77,6 +86,198 @@ class UserCursesController {
             });
         }
     }
+    
+    static async registerQuizzResult(req, res) {
+        try {
+            const { studentCourseId, moduleId, correctAnswers, totalQuestions, completionTime } = req.body;
+    
+            if (!studentCourseId || !moduleId || correctAnswers == null || totalQuestions == null) {
+                return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios.' });
+            }
+    
+            // Obtener el progreso actual del estudiante
+            const studentCourse = await Student.getProgressById(studentCourseId);
+    
+            if (!studentCourse) {
+                return res.status(404).json({ success: false, message: 'El registro del estudiante no existe.' });
+            }
+    
+            // Obtener los módulos del curso
+            const courseModules = await Student.getCourseModules(studentCourseId);
+            if (!courseModules || courseModules.length === 0) {
+                return res.status(404).json({ success: false, message: 'El curso no tiene módulos asignados.' });
+            }
+    
+            // Verificar si el moduleId existe en los módulos del curso
+            const moduleExists = courseModules.some(module => module.id === moduleId);
+            if (!moduleExists) {
+                return res.status(400).json({ success: false, message: 'El módulo especificado no existe en este curso.' });
+            }
+    
+            // Verificar si el progreso es un objeto o una cadena
+            const currentProgress = Array.isArray(studentCourse.module_progress)
+                ? studentCourse.module_progress
+                : JSON.parse(studentCourse.module_progress || '[]'); // Parsear si es una cadena
+    
+            // Verificar si el módulo ya existe en el progreso
+            const moduleIndex = currentProgress.findIndex((m) => m.module_id === moduleId);
+    
+            if (moduleIndex === -1) {
+                // Agregar nuevo módulo con intentos inicializados
+                currentProgress.push({
+                    module_id: moduleId,
+                    completionTime: completionTime,
+                    correct_answers: correctAnswers,
+                    total_questions: totalQuestions,
+                    progress_percentage: (correctAnswers / totalQuestions) * 100,
+                    attempts: 1, // Primer intento
+                });
+            } else {
+                // Actualizar módulo existente e incrementar intentos
+                currentProgress[moduleIndex] = {
+                    ...currentProgress[moduleIndex],
+                    completionTime: completionTime,
+                    correct_answers: correctAnswers,
+                    total_questions: totalQuestions,
+                    progress_percentage: (correctAnswers / totalQuestions) * 100,
+                    attempts: (currentProgress[moduleIndex].attempts || 0) + 1, // Incrementar intentos
+                };
+            }
+    
+            // Ordenar el arreglo currentProgress por module_id antes de guardar
+            currentProgress.sort((a, b) => a.module_id - b.module_id);
+    
+            // Guardar progreso actualizado en student_courses
+            const updatedProgress = await Student.updateModuleProgress(
+                studentCourseId,
+                JSON.stringify(currentProgress)
+            );
+    
+            if (!updatedProgress) {
+                return res.status(500).json({ success: false, message: 'No se pudo actualizar el progreso del módulo.' });
+            }
+    
+            // Actualizar el porcentaje del curso
+            await UserCursesController.updateCourseProgressPercentage(studentCourseId);
+
+            // Después de actualizar el progreso del módulo
+            const moduleData = {
+                correct_answers: correctAnswers,
+                total_questions: totalQuestions,
+                completionTime: completionTime,
+                attempts: currentProgress[moduleIndex]?.attempts || 1,
+                level: courseModules.find(m => m.id === moduleId)?.level || 1
+            };
+            console.log("Informacion progreso (moduleData): ", moduleData)
+            console.log("Informacion de los cursos del estudiante (studentCourse): ", studentCourse)
+
+            // Procesar el resultado del quiz para el sistema de niveles
+            const levelResults = await LevelSystemController.processQuizResult(
+                moduleData,
+                studentCourseId // Pasamos solo el ID, y obtenemos los datos completos en el controlador
+            );
+
+            console.log("Informacion de los niveles: ", levelResults)
+    
+            return res.status(200).json({
+                success: true,
+                message: 'Progreso actualizado exitosamente.',
+                module_progress: currentProgress,
+                level_results: levelResults
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Error interno del servidor.' });
+        }
+    }      
+
+    static async updateCourseProgressPercentage(studentCourseId) {
+        try {
+            // Obtener el progreso actual del estudiante
+            const studentCourse = await Student.getProgressById(studentCourseId);
+            if (!studentCourse) {
+                return false; // Si el estudiante no existe, no se puede actualizar
+            }
+    
+            // Obtener los módulos del curso al que está inscrito el estudiante
+            const courseModules = await Student.getCourseModules(studentCourseId);
+    
+            // Verificar si existen módulos
+            if (courseModules.length === 0) {
+                return false; // Si no hay módulos en el curso, no se puede actualizar
+            }
+    
+            // Obtener el progreso del estudiante y calcular el porcentaje total
+            const currentProgress = Array.isArray(studentCourse.module_progress)
+                ? studentCourse.module_progress
+                : JSON.parse(studentCourse.module_progress || '[]');
+    
+            let totalProgress = 0;
+            const totalModules = courseModules.length;
+    
+            // Sumar el porcentaje de cada módulo completado
+            courseModules.forEach(module => {
+                const moduleInProgress = currentProgress.find(m => m.module_id === module.id);
+                totalProgress += moduleInProgress ? moduleInProgress.progress_percentage : 0;
+            });
+    
+            // Calcular el porcentaje total del curso
+            const courseProgressPercentage = totalModules > 0 ? (totalProgress / totalModules) : 0;
+    
+            // Actualizar el porcentaje de completado del curso
+            const updated = await Student.updateCourseProgress(studentCourseId, courseProgressPercentage);
+            return updated;
+    
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }    
+
+    static async getStudentProgress(req, res) {
+        const { userEmail, courseId } = req.body;
+        try {
+            // Obtener datos del usuario
+            const userData = await userController.findUserByEmail(userEmail);
+            const courses = await Student.getStudentProgress(userData.user.id, courseId);
+    
+            if (!courses) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'El usuario no tiene ningún curso asignado.',
+                });
+            }
+    
+            // Validar si module_progress es null o un arreglo vacío
+            if (!Array.isArray(courses.module_progress) || courses.module_progress.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    message: 'El ususario no tiene progresos aún.',
+                    data: courses,
+                });
+            }
+    
+            // Crear el mapa de progreso y reemplazar el contenido de module_progress
+            courses.module_progress = courses.module_progress.reduce((acc, module) => {
+                acc[module.module_id] = module.progress_percentage;
+                return acc;
+            }, {});
+    
+            // Enviar la respuesta con module_progress reemplazado
+            return res.status(200).json({
+                success: true,
+                message: 'Progresos encontrados.',
+                data: courses,
+            });
+    
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Búsqueda de progresos fallida.',
+                error: error.message,
+            });
+        }
+    }    
 }
 
 module.exports = UserCursesController;

@@ -4,7 +4,7 @@
   "description": "Aqui encontraras toda la logica detras de la aplicacion MindUp",
   "main": "ecosystem.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pm2 start ecosystem.config.js --no-daemon"
   },
   "author": "",
   "license": "ISC",
