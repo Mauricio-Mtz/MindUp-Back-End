@@ -184,7 +184,7 @@ class ContentController {
         const { id } = req.params;
         try {
             const moduleDetail = await Module.getModuleDetailCatalog(id);
-            console.log(moduleDetail)
+            
             if (!moduleDetail) {
                 return res.status(404).json({
                     success: false,

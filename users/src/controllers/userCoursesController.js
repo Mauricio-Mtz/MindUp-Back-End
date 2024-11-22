@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const userController = require('./userController')
+const LevelSystemController = require('./LevelSystemController');
 
 class UserCursesController {
     static async enrollCourse(req, res) {
@@ -88,7 +89,7 @@ class UserCursesController {
     
     static async registerQuizzResult(req, res) {
         try {
-            const { studentCourseId, moduleId, correctAnswers, totalQuestions } = req.body;
+            const { studentCourseId, moduleId, correctAnswers, totalQuestions, completionTime } = req.body;
     
             if (!studentCourseId || !moduleId || correctAnswers == null || totalQuestions == null) {
                 return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios.' });
@@ -122,22 +123,29 @@ class UserCursesController {
             const moduleIndex = currentProgress.findIndex((m) => m.module_id === moduleId);
     
             if (moduleIndex === -1) {
-                // Agregar nuevo módulo
+                // Agregar nuevo módulo con intentos inicializados
                 currentProgress.push({
                     module_id: moduleId,
+                    completionTime: completionTime,
                     correct_answers: correctAnswers,
                     total_questions: totalQuestions,
                     progress_percentage: (correctAnswers / totalQuestions) * 100,
+                    attempts: 1, // Primer intento
                 });
             } else {
-                // Actualizar módulo existente
+                // Actualizar módulo existente e incrementar intentos
                 currentProgress[moduleIndex] = {
                     ...currentProgress[moduleIndex],
+                    completionTime: completionTime,
                     correct_answers: correctAnswers,
                     total_questions: totalQuestions,
                     progress_percentage: (correctAnswers / totalQuestions) * 100,
+                    attempts: (currentProgress[moduleIndex].attempts || 0) + 1, // Incrementar intentos
                 };
             }
+    
+            // Ordenar el arreglo currentProgress por module_id antes de guardar
+            currentProgress.sort((a, b) => a.module_id - b.module_id);
     
             // Guardar progreso actualizado en student_courses
             const updatedProgress = await Student.updateModuleProgress(
@@ -151,17 +159,37 @@ class UserCursesController {
     
             // Actualizar el porcentaje del curso
             await UserCursesController.updateCourseProgressPercentage(studentCourseId);
+
+            // Después de actualizar el progreso del módulo
+            const moduleData = {
+                correct_answers: correctAnswers,
+                total_questions: totalQuestions,
+                completionTime: completionTime,
+                attempts: currentProgress[moduleIndex]?.attempts || 1,
+                level: courseModules.find(m => m.id === moduleId)?.level || 1
+            };
+            console.log("Informacion progreso (moduleData): ", moduleData)
+            console.log("Informacion de los cursos del estudiante (studentCourse): ", studentCourse)
+
+            // Procesar el resultado del quiz para el sistema de niveles
+            const levelResults = await LevelSystemController.processQuizResult(
+                moduleData,
+                studentCourseId // Pasamos solo el ID, y obtenemos los datos completos en el controlador
+            );
+
+            console.log("Informacion de los niveles: ", levelResults)
     
             return res.status(200).json({
                 success: true,
-                message: 'Progreso del módulo y del curso actualizado exitosamente.',
+                message: 'Progreso actualizado exitosamente.',
                 module_progress: currentProgress,
+                level_results: levelResults
             });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Error interno del servidor.' });
         }
-    }        
+    }      
 
     static async updateCourseProgressPercentage(studentCourseId) {
         try {
@@ -220,6 +248,15 @@ class UserCursesController {
                 });
             }
     
+            // Validar si module_progress es null o un arreglo vacío
+            if (!Array.isArray(courses.module_progress) || courses.module_progress.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    message: 'El ususario no tiene progresos aún.',
+                    data: courses,
+                });
+            }
+    
             // Crear el mapa de progreso y reemplazar el contenido de module_progress
             courses.module_progress = courses.module_progress.reduce((acc, module) => {
                 acc[module.module_id] = module.progress_percentage;
@@ -230,7 +267,7 @@ class UserCursesController {
             return res.status(200).json({
                 success: true,
                 message: 'Progresos encontrados.',
-                data: courses, // module_progress ahora es un mapa
+                data: courses,
             });
     
         } catch (error) {

@@ -154,6 +154,20 @@ class Student {
         } else {
             return null; // Si no se encuentra el progreso, retorna null
         }
+    }     
+
+    static async updateLevelOfStudent(studentCourseId) {
+        const query = `
+
+        `;
+        
+        const [result] = await db.execute(query, [studentCourseId]);
+        
+        if (result.length > 0) {
+            return result[0];
+        } else {
+            return null;
+        }
     }      
 }
 module.exports = Student;
