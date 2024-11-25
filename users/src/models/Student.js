@@ -20,6 +20,23 @@ class Student {
             UPDATE students SET fullname = ?, birthdate = ?, country = ?, grade = ? WHERE email = ?
         `, [fullname, birthdate, country, grade, email]);
     }
+    
+    static async updatePreferencesByEmail(email, newPreferences) {
+        try {
+            // Convertir el array de preferencias a formato JSON
+            const preferencesJson = JSON.stringify(newPreferences);
+            
+            // Actualizar solo la columna de preferencias para el estudiante con el email especificado
+            await db.execute(`
+                UPDATE students SET preferences = ? WHERE email = ?
+            `, [preferencesJson, email]);
+    
+            return true;
+        } catch (error) {
+            console.error('Error updating preferences:', error);
+            throw error;
+        }
+    }
 
     static async getCoursesByStudent(email) {
         try {

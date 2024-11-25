@@ -67,9 +67,13 @@ class Student {
         let result = await db.execute(query, params);
     
         if (result[0].affectedRows > 0) {
-            return true;
+            return {
+                success: true
+            };
         } else {
-            return false;
+            return {
+                success: false
+            };
         }
     }    
 }

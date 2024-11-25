@@ -191,6 +191,7 @@ class AuthController {
                 default:
                     return res.status(400).json({ success: false, message: 'Tipo de usuario invalido' });
             }
+            console.log(result)
 
             // Enviar respuesta con la actualización exitosa
             if (result.success) {
