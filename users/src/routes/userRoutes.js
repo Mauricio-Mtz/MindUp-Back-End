@@ -8,6 +8,7 @@ router.get('/getUser', UserController.getUser);
 router.put('/updateEmail', UserController.updateEmail);
 router.put('/updatePassword', UserController.updatePassword);
 router.put('/updateInformation', UserController.updateInformation);
+router.put('/updatePreferences', UserController.updatePreferences);
 
 router.post('/enrollCourse', UserCoursesController.enrollCourse);
 router.post('/registerQuizzResult', UserCoursesController.registerQuizzResult);

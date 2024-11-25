@@ -62,15 +62,6 @@ app.use('/payments', createProxyMiddleware({
     },
 }));
 
-// Middleware para el servicio de estadísticas
-app.use('/stadistics', createProxyMiddleware({
-    target: `http://localhost:${process.env.STADISTICS_PORT}`, // Dirección del microservicio de estadísticas
-    changeOrigin: true,
-    pathRewrite: {
-        '^/stadistics': '/', // Reescribe la ruta para que coincida con las rutas en el microservicio
-    },
-}));
-
 // Servidor escuchando en el puerto definido en variables de entorno
 const PORT = process.env.GATEWAY_PORT || 3000; // Valor por defecto 3000
 app.listen(PORT, () => {

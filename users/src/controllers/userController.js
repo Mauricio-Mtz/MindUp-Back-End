@@ -186,6 +186,35 @@ class UserController {
         }
     }
 
+    static async updatePreferences(req, res) {
+        const { email, newPreferences } = req.body;
+        console.log(email, newPreferences)
+        try {
+            const { user } = await UserController.findUserByEmail(email);
+
+            if (!user) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'Usuario no encontrado.',
+                });
+            }
+
+            await Student.updatePreferencesByEmail(email, newPreferences);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Preferencias actualizadas correctamente.'
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Actualización de usuario fallida.',
+                error: error.message,
+            });
+        }
+    }
+
     static async getMembers(req, res) {
         const { id } = req.params;
         try {
