@@ -55,7 +55,7 @@ class Student {
     
             // Obtener los cursos a los que está inscrito el estudiante, junto con el nombre de la organización
             const [courses] = await db.query(
-                `SELECT c.id, c.name, c.description, c.img, o.name AS organization
+                `SELECT c.id, c.name, c.description, c.img, o.name AS organization, category
                 FROM courses c
                 INNER JOIN student_courses sc ON c.id = sc.course_id
                 INNER JOIN organizations o ON c.organization_id = o.id

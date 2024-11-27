@@ -33,6 +33,17 @@ class Student {
         `, [email]);
         return rows;
     }    
+
+    static async getSubscriptionStatusByStudent(email) {
+        const [rows] = await db.execute(`
+            SELECT sub.status AS subscription_status
+            FROM subscriptions sub
+            JOIN students st ON st.id = sub.student_id
+            WHERE st.email = ?
+        `, [email]);
+        
+        return rows.length > 0 ? rows[0].subscription_status : null;
+    }    
 }
 
 module.exports = Student;

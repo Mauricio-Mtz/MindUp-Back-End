@@ -4,6 +4,7 @@ const paymentController = require('../controllers/paymentController');
 const router = express.Router();
 
 router.get('/getPaymentsByStudent', paymentController.getPaymentsByStudent);
+router.get('/getSubscriptionStatusByStudent', paymentController.getSubscriptionStatusByStudent);
 
 // Rutas para PayPal
 router.post('/create-paypal-order', paymentController.createPaypalOrder);

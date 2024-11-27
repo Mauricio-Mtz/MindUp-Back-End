@@ -25,24 +25,18 @@ class UserCursesController {
             await fetch('http://localhost:3000/notifications/createNotification', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    to: email,  // Dirección de correo del destinatario (el correo del usuario registrado)
-                    subject: "¡Inscripción a curso!", // Asunto del correo
-                    text: `Hola ${name},\n\n¡Felicidades! Te has inscrito con éxito en el curso "${courseName}" en MindUp. Estamos muy emocionados de que te unas a nuestra plataforma educativa.
-            
-                            A continuación, podrás acceder a los materiales del curso y comenzar tu aprendizaje. Estamos aquí para apoyarte en cada paso del camino, por lo que no dudes en ponerte en contacto con nosotros si necesitas alguna asistencia.
-            
-                            Recuerda que, además del curso, tienes acceso a todas las herramientas que ofrecemos para optimizar tu experiencia. Aprovecha al máximo tu tiempo y aprende con nosotros.
-            
-                            Si tienes alguna pregunta, puedes ponerte en contacto con nuestro equipo de soporte en cualquier momento.
-            
-                            ¡Bienvenido a la comunidad MindUp! 
-            
-                            Saludos,\nEl equipo de MindUp` // Cuerpo del correo con un mensaje de bienvenida personalizado
-                }),
-            });        
+                    to: email,
+                    subject: "¡Inscripción a curso!",
+                    type: "courseEnrollment",
+                    data: {
+                        name: name,
+                        courseName: courseName
+                    }
+                })
+            });     
     
             // Respuesta de éxito
             return res.status(200).json({
