@@ -33,6 +33,54 @@ class paymentController {
             });
         }
     }
+    static async getSubscriptionStatusByStudent(req, res) {
+        const { email } = req.query;
+        let subscriptionStatus = null;
+        try {
+            // Buscar el estado de la suscripción según el email del estudiante
+            subscriptionStatus = await Student.getSubscriptionStatusByStudent(email);
+    
+            if (!subscriptionStatus) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'No hay registros de suscripción para este estudiante.',
+                    data: subscriptionStatus,
+                });
+            }
+    
+            // Validar el estado de la suscripción
+            if (subscriptionStatus === 'active') {
+                return res.status(200).json({
+                    success: true,
+                    message: 'La suscripción está activa.',
+                    data: subscriptionStatus,
+                });
+            } else if (subscriptionStatus === 'expired') {
+                return res.status(200).json({
+                    success: false,
+                    message: 'La suscripción ha expirado.',
+                    data: subscriptionStatus,
+                });
+            } else if (subscriptionStatus === 'cancelled') {
+                return res.status(200).json({
+                    success: false,
+                    message: 'La suscripción ha sido cancelada.',
+                    data: subscriptionStatus,
+                });
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: 'El estado de la suscripción es desconocido.',
+                });
+            }
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error al buscar el estado de la suscripción.',
+                error: error.message,
+            });
+        }
+    }    
 
     static async createPaypalOrder(req, res) {
         const { amount, currency } = req.body;
@@ -62,28 +110,19 @@ class paymentController {
                 await fetch('http://localhost:3000/notifications/createNotification', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        to: studentEmail,  // Dirección de correo del destinatario (el correo del usuario registrado)
-                        subject: "Confirmación de pago y acceso a MindUp", // Asunto del correo
-                        text: `Hola,\n\n¡Gracias por tu pago! Hemos recibido con éxito tu suscripción a MindUp. Aquí están los detalles de tu pago:
-                
-                                - **Método de pago**: PayPal  
-                                - **ID de transacción**: ${transactionId}  
-                                - **Estado de la transacción**: ${status}  
-                                - **Monto pagado**: $${amount.toFixed(2)}  
-                                - **Fecha de pago**: ${new Date().toLocaleDateString()}
-                
-                                Gracias a tu pago, ahora tienes acceso completo a los cursos y materiales educativos en MindUp. Puedes comenzar tu aprendizaje de inmediato y aprovechar todos los beneficios que ofrecemos.
-                
-                                Si en cualquier momento tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.
-                
-                                ¡Bienvenido a la comunidad MindUp, y disfruta de tu experiencia educativa con nosotros!
-                
-                                Saludos,\nEl equipo de MindUp` // Cuerpo del correo con los detalles del pago y bienvenida
-                    }),
-                });                
+                        to: studentEmail,
+                        subject: "Confirmación de pago y acceso a MindUp",
+                        type: "paymentPaypal",
+                        data: {
+                            transactionId: transactionId,
+                            status: status,
+                            amount: amount
+                        }
+                    })
+                });               
                 
                 res.json({ status: status, message: 'Pago completado correctamente.' });
             } else {
@@ -135,28 +174,19 @@ class paymentController {
             await fetch('http://localhost:3000/notifications/createNotification', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    to: external_reference,  // Dirección de correo del destinatario (el correo del usuario registrado)
-                    subject: "Confirmación de pago y acceso a MindUp", // Asunto del correo
-                    text: `Hola,\n\n¡Gracias por tu pago! Hemos recibido con éxito tu suscripción a MindUp. Aquí están los detalles de tu pago:
-            
-                            - **Método de pago**: MercadoPago 
-                            - **ID de transacción**: ${paymentId}  
-                            - **Estado de la transacción**: ${status}  
-                            - **Monto pagado**: $${transaction_amount.toFixed(2)}  
-                            - **Fecha de pago**: ${new Date().toLocaleDateString()}
-            
-                            Gracias a tu pago, ahora tienes acceso completo a los cursos y materiales educativos en MindUp. Puedes comenzar tu aprendizaje de inmediato y aprovechar todos los beneficios que ofrecemos.
-            
-                            Si en cualquier momento tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.
-            
-                            ¡Bienvenido a la comunidad MindUp, y disfruta de tu experiencia educativa con nosotros!
-            
-                            Saludos,\nEl equipo de MindUp` // Cuerpo del correo con los detalles del pago y bienvenida
-                }),
-            });      
+                    to: external_reference,
+                    subject: "Confirmación de pago y acceso a MindUp",
+                    type: "paymentMercadoPago",
+                    data: {
+                        paymentId: paymentId,
+                        status: status,
+                        amount: transaction_amount
+                    }
+                })
+            });     
     
             res.sendStatus(200);
         } catch (error) {
