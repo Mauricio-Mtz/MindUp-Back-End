@@ -4,15 +4,17 @@ const secretKey = process.env.JWT_SECRET || 'mi_clave_secreta'; // Usar variable
 
 class Organization {
     static async create(email, password, name, typeRegister) {
+        console.log(name)
+        console.log(typeRegister)
         let query;
         let params;
         
         if (typeRegister === 'native') {
-            query = `INSERT INTO organizations (email, password, name) VALUES (?, ?, ?)`;
-            params = [email, password, name];
-        } else {
             query = `INSERT INTO organizations (email, password) VALUES (?, ?)`;
             params = [email, password];
+        } else {
+            query = `INSERT INTO organizations (email, password, name) VALUES (?, ?, ?)`;
+            params = [email, password, name];
         }
     
         // Ejecutar la inserción y obtener el ID de la organización insertada
@@ -22,7 +24,7 @@ class Organization {
         const insertId = result.insertId;
     
         // Realizar una consulta para obtener la organización recién creada
-        const [rows] = await db.execute(`SELECT * FROM organizations WHERE id = ?`, [insertId]);
+        const [rows] = await db.execute(`SELECT id, email, id as organization_id, name as organization_name FROM organizations WHERE id = ?`, [insertId]);
     
         // Devolver la organización recién creada (el primer resultado de la consulta)
         return rows[0];
@@ -35,23 +37,23 @@ class Organization {
 
     static async updateDetails(email, name, password, address, rfc, fiscalAddress, fiscalRegime) {
         // Primero, buscamos el ID de la organización utilizando su email
-        const [idUser] = await db.execute(`SELECT id, email, name FROM organizations WHERE email = ?`, [email]);
-            
+        const [organization] = await db.execute(`SELECT id, email, name FROM organizations WHERE email = ?`, [email]);
+        
         // Validamos si la organización existe
-        if (idUser.length === 0) {
+        if (organization.length === 0) {
             throw new Error('Organización no encontrada');
         }
         
         // Obtenemos el ID y otros datos de la organización
-        const { id, email: userEmail, name: userName } = idUser[0];
-
+        const { id, email: userEmail, name: userName } = organization[0];
+    
         // Generar el token usando datos de la organización (ID y email)
         const token = jwt.sign(
             { id, email: userEmail, name: userName },
             secretKey,
             { expiresIn: '1h' } // El token expira en 1 hora
         );
-
+    
         // Construimos la consulta de actualización
         let query = `UPDATE organizations SET address = ?, token = ?, rfc = ?, fiscal_address = ?, fiscal_regime = ?`;
         const params = [address, token, rfc, fiscalAddress, fiscalRegime];
@@ -72,14 +74,22 @@ class Organization {
         params.push(id);
     
         // Ejecutamos la consulta
-        let result = await db.execute(query, params);
-
-        if (result[0].affectedRows > 0) {
-            return true;
+        const [result] = await db.execute(query, params);
+    
+        if (result.affectedRows > 0) {
+            return {
+                success: true,
+                data: {
+                    organization_id: id, // Devuelve solo el ID
+                    organization_name: name || userName // Usa el nuevo nombre o el anterior
+                }
+            };
         } else {
-            return false
+            return {
+                success: false
+            };
         }
-    }
+    }    
 }
 
 module.exports = Organization;

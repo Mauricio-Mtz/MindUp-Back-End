@@ -1,23 +1,26 @@
-const Report = require('../models/Report');
+const CoursesReport = require('../models/CoursesReport');
+const MembersReport = require('../models/MembersReport');
+const StudentsReport = require('../models/StudentsReport');
+
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit-table');
 
 class ReportController {
   static async getReport(req, res) {
-    const { reportType, report, name, format } = req.body;
+    const { reportType, reportCategory, course, format } = req.body;
     let reports;
 
     try {
       // Obtener los datos basados en el tipo de reporte
       switch (reportType) {
         case 'Miembros':
-          reports = await Report.reportMembers(report, name);
+          reports = await MembersReport.reportMembers(reportCategory);
           break;
         case 'Cursos':
-          reports = await Report.reportCourses(report, name);
+          reports = await CoursesReport.reportCourses(reportCategory);
           break;
         case 'Usuarios':
-          reports = await Report.reportStudents(report, name);
+          reports = await StudentsReport.reportStudents(reportCategory, course);
           break;
         default:
           return res.status(400).json({
@@ -25,10 +28,9 @@ class ReportController {
             message: 'Tipo de reporte no válido.',
           });
       }
-
       // Validar si hay datos
       if (!reports || reports.length === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           success: false,
           message: 'No se encontraron datos para el reporte solicitado.',
         });
@@ -36,14 +38,14 @@ class ReportController {
 
       // Generar archivo según el formato solicitado
       if (format === 'xlsx') {
-        await ReportController.generateExcel(reports, res, reportType, report);
+        await ReportController.generateExcel(reports, res, reportType, reportCategory);
       } else if (format === 'pdf') {
-        await ReportController.generatePDF(reports, res, reportType, report);
+        await ReportController.generatePDF(reports, res, reportType, reportCategory);
       } else {
         // Si no se especifica un formato, devolver JSON
         res.status(200).json({
           success: true,
-          message: 'Datos obtenidos correctamente.',
+          message: 'No se ha seleccionado un formato.',
           data: reports,
         });
       }
@@ -93,7 +95,8 @@ class ReportController {
   // Función para generar un archivo PDF dinámico
   static async generatePDF(reports, res, reportType, report) {
     const doc = new PDFDocument({
-      layout: 'landscape', // Cambiar la orientación a horizontal
+      layout: 'landscape',
+      margins: { top: 50, left: 50, right: 50, bottom: 50 }, // Añadir márgenes
     });
 
     // Enviar encabezados para PDF
@@ -105,9 +108,20 @@ class ReportController {
     const keys = Object.keys(reports[0]);
     const date = new Date().toISOString().split('T')[0];
 
+    // Título principal
+    doc.fontSize(18).font('Helvetica-Bold').text(`Reporte de ${reportType}`, {
+      align: 'center',
+      underline: true,
+    });
+
+    // Subtítulo
+    doc.moveDown();
+    doc.fontSize(12).font('Helvetica').text(`${report} - ${date}`, { align: 'center' });
+    doc.moveDown(2);
+
     const table = {
-      title: `Reporte de ${reportType}`,
-      subtitle: `${report} - ${date}`,
+      title: ``,
+      subtitle: ``,
       headers: keys.map(key => key.charAt(0).toUpperCase() + key.slice(1)),
       rows: reports.map(report => Object.values(report)),
     };
