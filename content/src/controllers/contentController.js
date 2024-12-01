@@ -326,6 +326,76 @@ class ContentController {
             });
         }
     }
+    
+    static async getCoursesByOrganization(req, res) {
+        const { id } = req.params;
+        try {
+            const courses = await Course.getCoursesByOrganization(id);
+            if (courses.length === 0){
+                res.status(200).json({
+                    success: true,
+                    message: "No hay cursos."
+                });
+            } else {
+                res.status(200).json({
+                    success: true,
+                    message: "Cursos obtenidos correctamente.",
+                    data: courses
+                });
+            }
+        } catch (error) {
+            console.error('Error al obtener los cursos:', error.message);
+            res.status(500).json({ message: 'Error al obtener los cursos', error });
+        }
+    }
+
+
+    static async deleteModule(req, res) {
+        const { id } = req.params;
+
+        try {
+            const affectedRows = await Module.deleteModule(id);
+            if (affectedRows === 0) {
+                return res.status(404).json({ message: 'Modulo no encontrado', success: false });
+            }
+            res.json({ message: 'Modulo eliminado correctamente', success: true });
+        } catch (error) {
+            console.error('Error al eliminar el Modulo:', error.message);
+            res.status(500).json({ message: 'Error al eliminar el Modulo', error });
+        }
+    }
+
+    static async deleteSection(req, res) {
+        const { id } = req.params;
+        const { module } = req.body;
+
+        try {
+            const affectedRows = await Module.deleteSection(id, module);
+            if (affectedRows === 0) {
+                return res.status(404).json({ message: 'Seccion no encontrado', success: false });
+            }
+            res.json({ message: 'Seccion eliminado correctamente', success: true });
+        } catch (error) {
+            console.error('Error al eliminar la Seccion:', error.message);
+            res.status(500).json({ message: 'Error al eliminar la Seccion', error });
+        }
+    }
+    
+    static async deleteQuestion(req, res) {
+        const { id } = req.params;
+        const { module } = req.body;
+
+        try {
+            const affectedRows = await Module.deleteQuestion(id, module);
+            if (affectedRows === 0) {
+                return res.status(404).json({ message: 'Pregunta no encontrada', success: false });
+            }
+            res.json({ message: 'Pregunta eliminada correctamente', success: true });
+        } catch (error) {
+            console.error('Error al eliminar la Pregunta:', error.message);
+            res.status(500).json({ message: 'Error al eliminar la Pregunta', error });
+        }
+    }
 }
 
 module.exports = ContentController;
