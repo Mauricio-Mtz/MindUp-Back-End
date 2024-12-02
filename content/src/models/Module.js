@@ -23,6 +23,16 @@ class Module {
         return moduleDetail;
     }
 
+    static async getModuleDetailCatalog(id) {
+        const [moduleDetail] = await db.query(`
+            SELECT *
+            FROM modules
+            WHERE id = ?
+        `, [id]);
+
+        return moduleDetail;
+    }
+
     static async addNewContent(content, id, courseId) {        
         // Intenta convertir a JSON para validar
         const parsedContent = JSON.parse(content);
@@ -55,9 +65,7 @@ class Module {
         return result.affectedRows;
     }
 
-    static async addNewModule(name, level, courseId) {        
-        
-
+    static async addNewModule(name, level, courseId) {
         // Realiza el query
         const [result] = await db.query(
             `INSERT INTO modules (name, level, course_id) VALUES (?, ?, ?)`,
@@ -92,6 +100,10 @@ class Module {
             WHERE id = ?
 
             `, [index, module]);
+        const [result] = await db.query(`
+            INSERT INTO modules (name, level, course_id) VALUES (?, ?, ?)
+            `,[name, level, courseId]
+        );
         return result.affectedRows;
     }
 }

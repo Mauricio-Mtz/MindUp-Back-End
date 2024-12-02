@@ -20,6 +20,23 @@ class Student {
             UPDATE students SET fullname = ?, birthdate = ?, country = ?, grade = ? WHERE email = ?
         `, [fullname, birthdate, country, grade, email]);
     }
+    
+    static async updatePreferencesByEmail(email, newPreferences) {
+        try {
+            // Convertir el array de preferencias a formato JSON
+            const preferencesJson = JSON.stringify(newPreferences);
+            
+            // Actualizar solo la columna de preferencias para el estudiante con el email especificado
+            await db.execute(`
+                UPDATE students SET preferences = ? WHERE email = ?
+            `, [preferencesJson, email]);
+    
+            return true;
+        } catch (error) {
+            console.error('Error updating preferences:', error);
+            throw error;
+        }
+    }
 
     static async getCoursesByStudent(email) {
         try {
@@ -38,7 +55,7 @@ class Student {
     
             // Obtener los cursos a los que está inscrito el estudiante, junto con el nombre de la organización
             const [courses] = await db.query(
-                `SELECT c.id, c.name, c.description, c.img, o.name AS organization
+                `SELECT c.id, c.name, c.description, c.img, o.name AS organization, category
                 FROM courses c
                 INNER JOIN student_courses sc ON c.id = sc.course_id
                 INNER JOIN organizations o ON c.organization_id = o.id
@@ -61,9 +78,8 @@ class Student {
                 [studentEmail]
             );
     
-            // Si no se encuentra al estudiante, lanzamos un error
             if (studentResults.length === 0) {
-                throw new Error('Estudiante no encontrado');
+                return { success: false, message: 'Estudiante no encontrado' };
             }
             const studentId = studentResults[0].id;
             const studentName = studentResults[0].fullname;
@@ -75,7 +91,7 @@ class Student {
             );
     
             if (existingEnrollment.length > 0) {
-                throw new Error('El estudiante ya está inscrito en este curso');
+                return { success: false, message: 'El estudiante ya está inscrito en este curso' };
             }
     
             // Insertar la inscripción en la tabla student_courses
@@ -91,20 +107,84 @@ class Student {
             );
     
             if (courseDetails.length === 0) {
-                throw new Error('Curso no encontrado');
+                return { success: false, message: 'Curso no encontrado' };
             }
     
-            // Retornar la información del curso junto con el mensaje de éxito
+            // Retornar éxito con los datos necesarios
             return { 
-                success: true, 
-                message: 'Inscripción exitosa al curso', 
-                course: courseDetails[0],  // Información del curso
-                student: { name: studentName, email: studentEmail }  // Información del curso
+                success: true,
+                message: 'Inscripción exitosa al curso',
+                course: courseDetails[0], 
+                student: { name: studentName, email: studentEmail } 
             };
         } catch (err) {
-            throw err;
+            throw err; // El controlador manejará errores no esperados
         }
-    }
-}
+    }    
 
+    // Obtener el progreso actual del estudiante
+    static async getProgressById(studentCourseId) {
+        const query = `SELECT module_progress FROM student_courses WHERE id = ?`;
+        const [rows] = await db.execute(query, [studentCourseId]);
+        return rows.length > 0 ? rows[0] : null;
+    }
+
+    // Actualizar el progreso del estudiante
+    static async updateModuleProgress (studentCourseId, moduleProgress){
+        const query = `UPDATE student_courses SET module_progress = ? WHERE id = ?`;
+        const [result] = await db.execute(query, [moduleProgress, studentCourseId]);
+        return result.affectedRows > 0;
+    }
+
+    // Obtener los módulos asociados al curso del estudiante
+    static async getCourseModules(studentCourseId) {
+        const query = `
+            SELECT m.id
+            FROM modules m
+            JOIN courses c ON c.id = m.course_id
+            JOIN student_courses sc ON sc.course_id = c.id
+            WHERE sc.id = ?;
+        `;
+        const [rows] = await db.execute(query, [studentCourseId]);
+        return rows;
+    }
+    
+    // Actualizar el porcentaje de progreso del curso
+    static async updateCourseProgress(studentCourseId, courseProgressPercentage) {
+        const query = `UPDATE student_courses SET progress = ? WHERE id = ?`;
+        const [result] = await db.execute(query, [courseProgressPercentage, studentCourseId]);
+        return result.affectedRows > 0;
+    }
+
+    static async getStudentProgress(userId, courseId) {
+        // Consulta para obtener el progreso del estudiante en el curso específico
+        const query = `
+            SELECT * 
+            FROM student_courses 
+            WHERE student_id = ? AND course_id = ?
+        `;
+        
+        const [result] = await db.execute(query, [userId, courseId]);
+        
+        if (result.length > 0) {
+            return result[0]; // Retorna el progreso encontrado
+        } else {
+            return null; // Si no se encuentra el progreso, retorna null
+        }
+    }     
+
+    static async updateLevelOfStudent(studentCourseId) {
+        const query = `
+
+        `;
+        
+        const [result] = await db.execute(query, [studentCourseId]);
+        
+        if (result.length > 0) {
+            return result[0];
+        } else {
+            return null;
+        }
+    }      
+}
 module.exports = Student;

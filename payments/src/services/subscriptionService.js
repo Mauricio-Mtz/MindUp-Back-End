@@ -101,21 +101,17 @@ class SubscriptionService {
             await fetch('http://localhost:3000/notifications/createNotification', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Indica que el cuerpo es JSON
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    to: email,  // Correo del estudiante
+                    to: email,
                     subject: status === 'expired' ? "Suscripción expirada" : "Suscripción a punto de expirar",
-                    text: `Hola,\n\nTu suscripción a MindUp ${status === 'expired' ? `ha expirado el dia ${fechaExpiracion}` : `expirará el ${fechaExpiracion}`}.
-            
-                        ${status === 'expired' ? 'Tu acceso a los cursos se ha desactivado.' : 'Recuerda que debes renovar tu suscripción para seguir accediendo a los cursos y materiales educativos en MindUp.'}
-            
-                        Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.
-            
-                        ¡Gracias por ser parte de la comunidad MindUp!
-            
-                        Saludos,\nEl equipo de MindUp`
-                }),
+                    type: "subscriptionNotice",
+                    data: {
+                        status: status,
+                        expirationDate: fechaExpiracion
+                    }
+                })
             });
     
             console.log(`Notificación enviada a ${email} sobre la suscripción ${subscriptionId}`);

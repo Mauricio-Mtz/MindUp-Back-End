@@ -32,7 +32,7 @@ class StudentsReport {
                     s.fullname AS Nombre,
                     c.name AS Curso, 
                     sc.level AS Nivel,
-                    CONCAT(sc.progress * 100, '%') AS Progreso,
+                    CONCAT(sc.progress, '%') AS Progreso,
                     CASE 
                         WHEN s.status = 1 THEN 'Activo'
                         WHEN s.status = 0 THEN 'Inactivo'
@@ -52,7 +52,7 @@ class StudentsReport {
                     s.fullname AS Nombre,
                     c.name AS Curso, 
                     sc.level AS Nivel,
-                    CONCAT(sc.progress * 100, '%') AS Progreso,
+                    CONCAT(sc.progress, '%') AS Progreso,
                     CASE 
                         WHEN s.status = 1 THEN 'Activo'
                         WHEN s.status = 0 THEN 'Inactivo'
@@ -60,7 +60,7 @@ class StudentsReport {
                 FROM courses c
                 INNER JOIN student_courses sc ON c.id = sc.course_id 
                 INNER JOIN students s ON sc.student_id = s.id
-                WHERE sc.progress >= 0.99 AND c.id = ?
+                WHERE sc.progress >= 99 AND c.id = ?
             `;
         params = [course]; // Agregar el ID del curso a los parámetros
         break;
