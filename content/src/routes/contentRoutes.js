@@ -13,11 +13,14 @@ router.get('/getCategories', ContentController.getCategories);
 
 router.get('/getCoursesByOrganization/:id', ContentController.getCoursesByOrganization);
 router.get('/getModuleDetail/:id', ContentController.getModuleDetail);
+
 router.post('/addNewCourse', ContentController.addNewCourse);
 router.put('/addNewContent', ContentController.addNewContent);
 router.put('/addNewQuestion', ContentController.addNewQuestion);
 router.put('/addNewModule', ContentController.addNewModule);
 router.put('/desactiveCourse', ContentController.desactiveCourse);
 
-
+router.delete('/delete-module/:id', ContentController.deleteModule);
+router.delete('/delete-section/:id', ContentController.deleteSection);
+router.delete('/delete-question/:id', ContentController.deleteQuestion);
 module.exports = router;

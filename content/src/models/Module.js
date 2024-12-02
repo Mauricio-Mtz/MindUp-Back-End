@@ -65,15 +65,45 @@ class Module {
         return result.affectedRows;
     }
 
-    static async addNewModule(name, level, courseId) {        
-        
-
+    static async addNewModule(name, level, courseId) {
         // Realiza el query
+        const [result] = await db.query(
+            `INSERT INTO modules (name, level, course_id) VALUES (?, ?, ?)`,
+            [name, level, courseId]
+        );
+
+        return result.affectedRows;
+    }
+
+    static async deleteModule(id) {
+        const [result] = await db.query('DELETE FROM modules WHERE id = ?', [id]);
+        return result.affectedRows;
+    }
+
+    static async deleteSection(id, module) {
+        const index = `$[${id}]`;
+        const [result] = await db.query(`
+            UPDATE modules
+                SET content = JSON_REMOVE(content, ?)
+            WHERE id = ?
+
+            `, [index, module]);
+        return result.affectedRows;
+    }
+
+    static async deleteQuestion(id, module) {
+        const index = `$.questions[${id}]`;
+        console.log(index, module);
+        const [result] = await db.query(`
+            UPDATE modules
+                SET quiz = JSON_REMOVE(quiz, ?)
+            WHERE id = ?
+
+            `, [index, module]);
         const [result] = await db.query(`
             INSERT INTO modules (name, level, course_id) VALUES (?, ?, ?)
             `,[name, level, courseId]
         );
-
         return result.affectedRows;
     }
 }
