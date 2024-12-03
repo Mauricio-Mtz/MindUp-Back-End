@@ -266,6 +266,53 @@ class ContentController {
         }
     }
 
+    static async desactiveCourse(req, res) {
+        const { id } = req.body;
+
+        try {
+            const affectedRows = await Course.toggleCourseStatus(id);
+            if (affectedRows === 0) {
+                return res.status(200).json({ success: false, message: 'Curso no encontrado' });
+            }
+            res.json({ success: true, message: 'Curso eliminado correctamente' });
+        } catch (error) {
+            console.error('Error al eliminar el curso:', error.message);
+            res.status(500).json({ message: 'Error al eliminar el curso', error });
+        }
+    }
+
+    static async addNewModule(req, res) {
+        const { name, level, courseId } = req.body;
+
+        if ( !courseId) {
+            return res.status(400).json({ message: 'Id no encontrada' });
+        }
+
+        try {
+            const affectedRows = await Module.addNewModule(name, level, courseId);
+            if (affectedRows === 0) {
+                return res.status(404).json({
+                    success: false, 
+                    message: 'Curso no encontrado',
+                    rows: 0 
+                });
+            }
+            res.status(200).json({
+                success: true,
+                message: "Contenido agregado correctamente.",
+                rows: affectedRows 
+            });
+            
+        } catch (error) {
+            console.error('Error al actualizar el curso:', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Error del servidor',
+                rows: -1 
+            });
+        }
+    }
+
     static async addNewContent(req, res) {
         const { content, id, courseId } = req.body;
 
@@ -330,52 +377,53 @@ class ContentController {
         }
     }
 
-    static async addNewModule(req, res) {
-        const { name, level, courseId } = req.body;
-
-        if ( !courseId) {
-            return res.status(400).json({ message: 'Id no encontrada' });
-        }
+    static async deleteModule(req, res) {
+        const { id } = req.params;
 
         try {
-            const affectedRows = await Module.addNewModule(name, level, courseId);
-            if (affectedRows === 0) {
-                return res.status(404).json({
-                    success: false, 
-                    message: 'Curso no encontrado',
-                    rows: 0 
-                });
-            }
-            res.status(200).json({
-                success: true,
-                message: "Contenido agregado correctamente.",
-                rows: affectedRows 
-            });
-            
-        } catch (error) {
-            console.error('Error al actualizar el curso:', error.message);
-            res.status(500).json({
-                success: false,
-                message: 'Error del servidor',
-                rows: -1 
-            });
-        }
-    }
-
-    static async desactiveCourse(req, res) {
-        const { id } = req.body;
-
-        try {
-            const affectedRows = await Course.toggleCourseStatus(id);
+            const affectedRows = await Module.deleteModule(id);
             if (affectedRows === 0) {
                 return res.status(200).json({ success: false, message: 'Curso no encontrado' });
             }
-            res.json({ success: true, message: 'Curso eliminado correctamente' });
+            res.status(200).json({ success: true, message: 'Curso eliminado correctamente' });
         } catch (error) {
             console.error('Error al eliminar el curso:', error.message);
             res.status(500).json({ message: 'Error al eliminar el curso', error });
         }
     }
+
+    static async deleteSection(req, res) {
+        const { sectionId } = req.params;
+        const { moduleId } = req.body;
+
+        try {
+            const affectedRows = await Module.deleteSection(sectionId, moduleId);
+            if (affectedRows === 0) {
+                return res.status(200).json({ success: false, message: 'Seccion no encontrado' });
+            }
+            res.status(200).json({ success: true, message: 'Seccion eliminado correctamente' });
+        } catch (error) {
+            console.error('Error al eliminar la Seccion:', error.message);
+            res.status(500).json({ message: 'Error al eliminar la Seccion', error });
+        }
+    }
+
+    static async deleteQuestion(req, res) {
+        const { questionId } = req.params;
+        const { moduleId } = req.body;
+        
+        try {
+            const affectedRows = await Module.deleteQuestion(questionId, moduleId);
+            if (affectedRows === 0) {
+                return res.status(200).json({ success: false, message: 'Pregunta no encontrada' });
+            }
+            res.status(200).json({ success: true, message: 'Pregunta eliminada correctamente' });
+        } catch (error) {
+            console.error('Error al eliminar la Pregunta:', error.message);
+            res.status(500).json({ message: 'Error al eliminar la Pregunta', error });
+        }
+    }
+
 }
 
 module.exports = ContentController;

@@ -24,7 +24,7 @@ class Organization {
         const insertId = result.insertId;
     
         // Realizar una consulta para obtener la organización recién creada
-        const [rows] = await db.execute(`SELECT id, email, id as organization_id, name as organization_name FROM organizations WHERE id = ?`, [insertId]);
+        const [rows] = await db.execute(`SELECT id, name, email, id as organization_id, name as organization_name FROM organizations WHERE id = ?`, [insertId]);
     
         // Devolver la organización recién creada (el primer resultado de la consulta)
         return rows[0];

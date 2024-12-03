@@ -13,11 +13,16 @@ router.get('/getCategories', ContentController.getCategories);
 
 router.get('/getCoursesByOrganization/:id', ContentController.getCoursesByOrganization);
 router.get('/getModuleDetail/:id', ContentController.getModuleDetail);
+
+//CRUD del contenido adicion y desactivacion del curso
 router.post('/addNewCourse', ContentController.addNewCourse);
+router.put('/desactiveCourse', ContentController.desactiveCourse);
+//CRUD del contenido adicion de los modulos, secciones y quizzes
+router.put('/addNewModule', ContentController.addNewModule);
 router.put('/addNewContent', ContentController.addNewContent);
 router.put('/addNewQuestion', ContentController.addNewQuestion);
-router.put('/addNewModule', ContentController.addNewModule);
-router.put('/desactiveCourse', ContentController.desactiveCourse);
-
-
+//CRUD del contenido eliminacion de los modulos, secciones y quizzes
+router.delete('/delete-module/:id', ContentController.deleteModule);
+router.delete('/delete-section/:sectionId', ContentController.deleteSection);
+router.delete('/delete-question/:questionId', ContentController.deleteQuestion);
 module.exports = router;
