@@ -31,7 +31,7 @@ class Organization {
     }    
 
     static async findByEmail(email) {
-        const [rows] = await db.execute(`SELECT * FROM organizations WHERE email = ?`, [email]);
+        const [rows] = await db.execute(`SELECT id, name, email, id as organization_id, name as organization_name FROM organizations WHERE email = ?`, [email]);
         return rows[0];
     }
 
