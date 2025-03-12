@@ -89,14 +89,7 @@ class UserCursesController {
                 return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios.' });
             }
     
-            // Obtener el progreso actual del estudiante
-            const studentCourse = await Student.getProgressById(studentCourseId);
-    
-            if (!studentCourse) {
-                return res.status(404).json({ success: false, message: 'El registro del estudiante no existe.' });
-            }
-    
-            // Obtener los módulos del curso
+            // Obtener los módulos del curso primero
             const courseModules = await Student.getCourseModules(studentCourseId);
             if (!courseModules || courseModules.length === 0) {
                 return res.status(404).json({ success: false, message: 'El curso no tiene módulos asignados.' });
@@ -108,13 +101,23 @@ class UserCursesController {
                 return res.status(400).json({ success: false, message: 'El módulo especificado no existe en este curso.' });
             }
     
-            // Verificar si el progreso es un objeto o una cadena
-            const currentProgress = Array.isArray(studentCourse.module_progress)
-                ? studentCourse.module_progress
-                : JSON.parse(studentCourse.module_progress || '[]'); // Parsear si es una cadena
+            // Obtener el progreso actual del estudiante
+            let studentCourse = await Student.getProgressById(studentCourseId);
+            
+            // Inicializar un array vacío si no hay registro de progreso
+            let currentProgress = [];
+            
+            if (studentCourse && studentCourse.module_progress) {
+                // Si existe progreso, usarlo
+                currentProgress = Array.isArray(studentCourse.module_progress) 
+                    ? studentCourse.module_progress 
+                    : JSON.parse(studentCourse.module_progress || '[]');
+            }
     
             // Verificar si el módulo ya existe en el progreso
             const moduleIndex = currentProgress.findIndex((m) => m.module_id === moduleId);
+            
+            const progressPercentage = (correctAnswers / totalQuestions) * 100;
     
             if (moduleIndex === -1) {
                 // Agregar nuevo módulo con intentos inicializados
@@ -123,7 +126,7 @@ class UserCursesController {
                     completionTime: completionTime,
                     correct_answers: correctAnswers,
                     total_questions: totalQuestions,
-                    progress_percentage: (correctAnswers / totalQuestions) * 100,
+                    progress_percentage: progressPercentage,
                     attempts: 1, // Primer intento
                 });
             } else {
@@ -133,7 +136,7 @@ class UserCursesController {
                     completionTime: completionTime,
                     correct_answers: correctAnswers,
                     total_questions: totalQuestions,
-                    progress_percentage: (correctAnswers / totalQuestions) * 100,
+                    progress_percentage: progressPercentage,
                     attempts: (currentProgress[moduleIndex].attempts || 0) + 1, // Incrementar intentos
                 };
             }
@@ -141,10 +144,10 @@ class UserCursesController {
             // Ordenar el arreglo currentProgress por module_id antes de guardar
             currentProgress.sort((a, b) => a.module_id - b.module_id);
     
-            // Guardar progreso actualizado en student_courses
+            // Guardar progreso actualizado en MongoDB (usando el nuevo método)
             const updatedProgress = await Student.updateModuleProgress(
                 studentCourseId,
-                JSON.stringify(currentProgress)
+                currentProgress
             );
     
             if (!updatedProgress) {
@@ -153,25 +156,21 @@ class UserCursesController {
     
             // Actualizar el porcentaje del curso
             await UserCursesController.updateCourseProgressPercentage(studentCourseId);
-
+    
             // Después de actualizar el progreso del módulo
             const moduleData = {
                 correct_answers: correctAnswers,
                 total_questions: totalQuestions,
                 completionTime: completionTime,
-                attempts: currentProgress[moduleIndex]?.attempts || 1,
+                attempts: currentProgress.find(m => m.module_id === moduleId)?.attempts || 1,
                 level: courseModules.find(m => m.id === moduleId)?.level || 1
             };
-            console.log("Informacion progreso (moduleData): ", moduleData)
-            console.log("Informacion de los cursos del estudiante (studentCourse): ", studentCourse)
-
+    
             // Procesar el resultado del quiz para el sistema de niveles
             const levelResults = await LevelSystemController.processQuizResult(
                 moduleData,
                 studentCourseId // Pasamos solo el ID, y obtenemos los datos completos en el controlador
             );
-
-            console.log("Informacion de los niveles: ", levelResults)
     
             return res.status(200).json({
                 success: true,
@@ -183,16 +182,10 @@ class UserCursesController {
             console.error(error);
             return res.status(500).json({ error: 'Error interno del servidor.' });
         }
-    }      
+    }  
 
     static async updateCourseProgressPercentage(studentCourseId) {
         try {
-            // Obtener el progreso actual del estudiante
-            const studentCourse = await Student.getProgressById(studentCourseId);
-            if (!studentCourse) {
-                return false; // Si el estudiante no existe, no se puede actualizar
-            }
-    
             // Obtener los módulos del curso al que está inscrito el estudiante
             const courseModules = await Student.getCourseModules(studentCourseId);
     
@@ -201,10 +194,19 @@ class UserCursesController {
                 return false; // Si no hay módulos en el curso, no se puede actualizar
             }
     
-            // Obtener el progreso del estudiante y calcular el porcentaje total
-            const currentProgress = Array.isArray(studentCourse.module_progress)
-                ? studentCourse.module_progress
-                : JSON.parse(studentCourse.module_progress || '[]');
+            // Obtener el progreso actual del estudiante
+            const studentProgress = await Student.getProgressById(studentCourseId);
+            
+            // Si no hay progreso registrado, inicializar en 0%
+            if (!studentProgress || !studentProgress.module_progress) {
+                await Student.updateCourseProgress(studentCourseId, 0);
+                return true;
+            }
+    
+            // Obtener el progreso del estudiante
+            const currentProgress = Array.isArray(studentProgress.module_progress)
+                ? studentProgress.module_progress
+                : JSON.parse(studentProgress.module_progress || '[]');
     
             let totalProgress = 0;
             const totalModules = courseModules.length;
