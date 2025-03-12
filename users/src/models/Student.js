@@ -1,4 +1,5 @@
 const db = require('../../config/db');
+const StudentProgress = require('./mongodb/progressSchema');
 
 class Student {
     static async findByEmail(email) {
@@ -122,18 +123,40 @@ class Student {
         }
     }    
 
-    // Obtener el progreso actual del estudiante
+    // Obtener el progreso actual del estudiante (actualizado para MongoDB)
     static async getProgressById(studentCourseId) {
-        const query = `SELECT module_progress FROM student_courses WHERE id = ?`;
-        const [rows] = await db.execute(query, [studentCourseId]);
-        return rows.length > 0 ? rows[0] : null;
+        try {
+            const progressData = await StudentProgress.findOne({ student_course_id: studentCourseId });
+            return progressData ? progressData : null;
+        } catch (error) {
+            console.error('Error obteniendo progreso:', error);
+            throw error;
+        }
     }
 
-    // Actualizar el progreso del estudiante
-    static async updateModuleProgress (studentCourseId, moduleProgress){
-        const query = `UPDATE student_courses SET module_progress = ? WHERE id = ?`;
-        const [result] = await db.execute(query, [moduleProgress, studentCourseId]);
-        return result.affectedRows > 0;
+    // Actualizar el progreso del estudiante (actualizado para MongoDB)
+    static async updateModuleProgress(studentCourseId, moduleProgress) {
+        try {
+            // Buscar si ya existe un documento para este student_course_id
+            let progressDoc = await StudentProgress.findOne({ student_course_id: studentCourseId });
+            
+            if (!progressDoc) {
+                // Si no existe, crear un nuevo documento
+                progressDoc = new StudentProgress({
+                    student_course_id: studentCourseId,
+                    module_progress: moduleProgress
+                });
+            } else {
+                // Si existe, actualizar el module_progress
+                progressDoc.module_progress = moduleProgress;
+            }
+            
+            await progressDoc.save();
+            return true;
+        } catch (error) {
+            console.error('Error actualizando progreso:', error);
+            throw error;
+        }
     }
 
     // Obtener los módulos asociados al curso del estudiante
@@ -167,24 +190,45 @@ class Student {
         const [result] = await db.execute(query, [userId, courseId]);
         
         if (result.length > 0) {
-            return result[0]; // Retorna el progreso encontrado
+            // Obtener el student_course_id
+            const studentCourseId = result[0].id;
+            
+            // Obtener el progreso detallado de MongoDB
+            const detailedProgress = await this.getProgressById(studentCourseId);
+            
+            // Transformar el formato de detailedProgress a module_progress
+            const moduleProgress = {};
+            if (detailedProgress && detailedProgress.module_progress) {
+                console.log('Module progress data:', JSON.stringify(detailedProgress.module_progress));
+                
+                detailedProgress.module_progress.forEach(item => {
+                    // Check if module_id exists and is not undefined
+                    if (item.module_id) {
+                        moduleProgress[item.module_id] = item.progress_percentage;
+                    } else {
+                        console.log('Warning: module_id is undefined for item:', JSON.stringify(item));
+                    }
+                });
+            }
+            
+            // Combinar los resultados
+            return {
+                ...result[0],
+                module_progress: moduleProgress
+            };
         } else {
             return null; // Si no se encuentra el progreso, retorna null
         }
-    }     
+    }
 
     static async updateLevelOfStudent(studentCourseId) {
         const query = `
-
+            UPDATE student_courses SET level = level + 1 WHERE id = ?
         `;
         
         const [result] = await db.execute(query, [studentCourseId]);
         
-        if (result.length > 0) {
-            return result[0];
-        } else {
-            return null;
-        }
+        return result.affectedRows > 0;
     }      
 }
 module.exports = Student;
