@@ -162,7 +162,7 @@ class Student {
     // Obtener los módulos asociados al curso del estudiante
     static async getCourseModules(studentCourseId) {
         const query = `
-            SELECT m.id
+            SELECT m.id, sc.student_id
             FROM modules m
             JOIN courses c ON c.id = m.course_id
             JOIN student_courses sc ON sc.course_id = c.id

@@ -52,13 +52,23 @@ class AuthController {
                     });
                 }
             }
-    
+            
             // Generar el token JWT solo si las credenciales son correctas
             const token = jwt.sign(
                 { id: user.id, email: user.email, type: typeUser },
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
+
+            // LLamar al servicio de notificaciones para definir la hora a la que inició sesión el estudiante
+            await fetch('http://localhost:3000/notifications/reminders/track-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                studentId: user.id,
+                activityType: 'login'
+                })
+            });
 
             // Agregar el typeUser al objeto de usuario
             user = { ...user, type: typeUser };
