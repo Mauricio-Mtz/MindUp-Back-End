@@ -69,6 +69,7 @@ class ManagerController {
                 }
 
                 // Subir la imagen al servidor remoto
+//                 const remoteImagePath = await ContentService.uploadToLocalServer(req.file);
                 const remoteImagePath = await ContentService.uploadToRemoteServer(req.file);
 
                 // Insertar el curso en la base de datos utilizando el modelo

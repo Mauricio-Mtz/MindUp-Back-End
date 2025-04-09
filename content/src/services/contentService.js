@@ -22,31 +22,16 @@ class ContentService {
     }
 
     // Método para subir la imagen al servidor remoto usando FTP
-    static async uploadToRemoteServer(file) {
+    static async uploadToLocalServer(file) {
         return new Promise((resolve, reject) => {
-            const client = new FTPClient();
-            client.on('ready', () => {
-                const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`; // Nombre único para evitar conflictos
-                const extension = path.extname(file.originalname);
-                const remotePath = `/images/courses/${uniqueSuffix}${extension}`; // Ruta remota donde se almacenará la imagen
+            const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`; // Nombre único para evitar conflictos
+            const extension = path.extname(file.originalname);
+            const localPath = `./images/courses/${uniqueSuffix}${extension}`; // Ruta local donde se almacenará la imagen
 
-                client.put(file.buffer, remotePath, (err) => {
-                    if (err) return reject(err);
-                    
-                    client.end(); // Cerrar la conexión
-                    resolve(remotePath); // Retornamos solo la ruta remota
-                });
-            });
-
-            client.connect({
-                host: 'ftp.codeflex.space',
-                port: 21,
-                user: 'sitebuilder@codeflex.space',
-                password: 'CodeFlex1234!@',
-            });
-
-            client.on('error', (err) => {
-                reject(`Error de conexión: ${err.message}`);
+            require('fs').writeFile(localPath, file.buffer, (err) => {
+                if (err) return reject(err);
+                
+                resolve(localPath); // Retornamos solo la ruta local
             });
         });
     }
