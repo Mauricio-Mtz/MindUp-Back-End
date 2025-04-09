@@ -7,7 +7,8 @@ class Course {
             const [courses] = await db.query(
                 `SELECT c.id, c.name, c.description, c.img, c.category, o.name AS organization, c.status
                 FROM courses c
-                INNER JOIN organizations o ON c.organization_id = o.id`
+                INNER JOIN organizations o ON c.organization_id = o.id
+                WHERE c.status = 1`
             );
             return courses;
         } catch (err) {

@@ -4,17 +4,30 @@ const ManagerController = require('../controllers/managerController');
 const CommentController = require('../controllers/commentController');
 
 const router = express.Router();
+// MANAGER ROUTES
+router.get('/getCoursesByOrganization/:id', ManagerController.getCoursesByOrganization);
+router.get('/getModuleDetail/:id', ManagerController.getModuleDetail);
 
-router.get('/getAllCourses', ContentController.getAllCourses);
-router.get('/getRecomendedCourses', ContentController.getRecomendedCourses);
-router.get('/getCourse/:id', ContentController.getCourse);
+//CRUD del contenido adicion y desactivacion del curso
+router.post('/addNewCourse', ManagerController.addNewCourse);
+router.put('/desactiveCourse', ManagerController.desactiveCourse);
+//CRUD del contenido adicion de los modulos, secciones y quizzes
+router.put('/addNewModule', ManagerController.addNewModule);
+router.put('/addNewContent', ManagerController.addNewContent);
+router.put('/addNewQuestion', ManagerController.addNewQuestion);
+//CRUD del contenido eliminacion de los modulos, secciones y quizzes
+router.delete('/delete-module/:id', ManagerController.deleteModule);
+router.delete('/delete-section/:sectionId', ManagerController.deleteSection);
+router.delete('/delete-question/:questionId', ManagerController.deleteQuestion);
 
-router.get('/getCatalog', ContentController.getCatalog);
-router.get('/getModuleDetailCatalog/:id', ContentController.getModuleDetailCatalog);
-router.get('/getCategories', ContentController.getCategories);
+// CATALOG ROUTES
+router.get('/getAllCourses', CatalogController.getAllCourses);
+router.get('/getRecomendedCourses', CatalogController.getRecomendedCourses);
+router.get('/getCourse/:id', CatalogController.getCourse);
 
-router.get('/getCoursesByOrganization/:id', ContentController.getCoursesByOrganization);
-router.get('/getModuleDetail/:id', ContentController.getModuleDetail);
+router.get('/getCatalog', CatalogController.getCatalog);
+router.get('/getModuleDetailCatalog/:id', CatalogController.getModuleDetailCatalog);
+router.get('/getCategories', CatalogController.getCategories);
 
 router.post('/addNewCourse', ContentController.addNewCourse);
 router.put('/addNewContent', ContentController.addNewContent);
@@ -30,8 +43,6 @@ router.get('/getCategories', CatalogController.getCategories);
 router.get('/courses/:courseId/comments', CommentController.getComments);
 router.post('/courses/:courseId/comments', CommentController.addComment);
 router.get('/courses/:courseId/rating', CommentController.getRatingInfo);
-
-
 // router.get('/getCoursesByOrganization/:id', CatalogController.getCoursesByOrganization);
 // router.get('/getModuleDetail/:id', CatalogController.getModuleDetail);
 module.exports = router;

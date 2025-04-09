@@ -26,7 +26,7 @@ class Student {
     }    
 
     static async findByEmail(email) {
-        const [rows] = await db.execute(`SELECT email, password, preferences FROM students WHERE email = ?`, [email]);
+        const [rows] = await db.execute(`SELECT id, email, password, preferences FROM students WHERE email = ?`, [email]);
         return rows[0];
     }
 
