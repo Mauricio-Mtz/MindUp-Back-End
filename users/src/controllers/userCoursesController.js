@@ -37,6 +37,17 @@ class UserCursesController {
                     }
                 })
             });     
+
+            // Llamar al endpoint de seguimiento de actividad
+            const studentInfo = await Student.findByEmail(studentEmail);
+            await fetch('http://localhost:3000/notifications/reminders/track-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                studentId: studentInfo.id,
+                activityType: 'courseAccess'
+                })
+            });
     
             // Respuesta de éxito
             return res.status(200).json({
@@ -91,16 +102,17 @@ class UserCursesController {
     
             // Obtener los módulos del curso primero
             const courseModules = await Student.getCourseModules(studentCourseId);
+            
             if (!courseModules || courseModules.length === 0) {
                 return res.status(404).json({ success: false, message: 'El curso no tiene módulos asignados.' });
             }
-    
+            
             // Verificar si el moduleId existe en los módulos del curso
             const moduleExists = courseModules.some(module => module.id === moduleId);
             if (!moduleExists) {
                 return res.status(400).json({ success: false, message: 'El módulo especificado no existe en este curso.' });
             }
-    
+            
             // Obtener el progreso actual del estudiante
             let studentCourse = await Student.getProgressById(studentCourseId);
             
@@ -140,23 +152,23 @@ class UserCursesController {
                     attempts: (currentProgress[moduleIndex].attempts || 0) + 1, // Incrementar intentos
                 };
             }
-    
+            
             // Ordenar el arreglo currentProgress por module_id antes de guardar
             currentProgress.sort((a, b) => a.module_id - b.module_id);
-    
+            
             // Guardar progreso actualizado en MongoDB (usando el nuevo método)
             const updatedProgress = await Student.updateModuleProgress(
                 studentCourseId,
                 currentProgress
             );
-    
+            
             if (!updatedProgress) {
                 return res.status(500).json({ success: false, message: 'No se pudo actualizar el progreso del módulo.' });
             }
-    
+            
             // Actualizar el porcentaje del curso
             await UserCursesController.updateCourseProgressPercentage(studentCourseId);
-    
+            
             // Después de actualizar el progreso del módulo
             const moduleData = {
                 correct_answers: correctAnswers,
@@ -165,12 +177,22 @@ class UserCursesController {
                 attempts: currentProgress.find(m => m.module_id === moduleId)?.attempts || 1,
                 level: courseModules.find(m => m.id === moduleId)?.level || 1
             };
-    
+            
             // Procesar el resultado del quiz para el sistema de niveles
             const levelResults = await LevelSystemController.processQuizResult(
                 moduleData,
                 studentCourseId // Pasamos solo el ID, y obtenemos los datos completos en el controlador
             );
+
+            // Enviar notificación al estudiante
+            await fetch('http://localhost:3000/notifications/reminders/track-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                studentId: courseModules[0].student_id,
+                activityType: 'moduleCompleted'
+                })
+            });
     
             return res.status(200).json({
                 success: true,
