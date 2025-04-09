@@ -9,9 +9,7 @@ class NotificationController {
 
         // Configura el transporte
         const transporter = nodemailer.createTransport({
-            host: 'smtp.titan.email',
-            port: 465,
-            secure: true,
+            service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER, // Tu correo electrónico
                 pass: process.env.EMAIL_PASS, // Tu contraseña

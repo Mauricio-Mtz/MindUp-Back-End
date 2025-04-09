@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
 const Member = require('../models/Member');
 const Organization = require('../models/Organization');
+const db = require('../../config/db');
 
 class UserController {
     static async findUserByEmail(email) {
@@ -276,6 +277,40 @@ class UserController {
             });
         }
     }
+
+    static async getRecentActivity(req, res) {
+        const { userId } = req.query;
+        
+        try {
+            // Obtener actividad de los últimos 7 días
+            const query = `
+                SELECT 
+                    DAYNAME(activity_date) as day,
+                    COUNT(*) as count
+                FROM student_activity_log
+                WHERE student_id = ? 
+                AND activity_date >= CURDATE() - INTERVAL 7 DAY
+                GROUP BY DAYNAME(activity_date)
+                ORDER BY activity_date
+            `;
+            
+            const [results] = await db.execute(query, [userId]);
+            
+            res.status(200).json({
+                success: true,
+                message: "Actividad reciente obtenida",
+                data: results
+            });
+        } catch (error) {
+            console.error('Error al obtener actividad:', error);
+            res.status(500).json({
+                success: false,
+                message: "Error al obtener actividad reciente",
+                error: error.message
+            });
+        }
+    }
+
 }
 
 module.exports = UserController;

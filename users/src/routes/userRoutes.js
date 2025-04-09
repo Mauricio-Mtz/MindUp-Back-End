@@ -18,4 +18,6 @@ router.post('/getStudentProgress', UserCoursesController.getStudentProgress);
 router.get('/getMembers/:id', UserController.getMembers);
 router.post('/deleteUser', UserController.deleteUser);
 
+router.get('/getRecentActivity', UserController.getRecentActivity);
+
 module.exports = router;
